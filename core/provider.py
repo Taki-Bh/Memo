@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from context import LLMContext
-
+from core.context import LLMContext
 class LLMProvider(ABC):
 
     def __init__(self, context : LLMContext):

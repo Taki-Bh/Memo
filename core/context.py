@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Any,field
+from typing import Any
 
 @dataclass
 class LLMContext:
     instruction:str
     goal: str
-    variables: dict[str, Any] = field(default_factory=dict)
-    messages: list[dict[str, str]] = field(default_factory=list)
+    variables: dict[str, Any] 
+    messages: list[dict[str, str]] 
