@@ -36,15 +36,17 @@ class ChatGPTBrowserProvider(LLMProvider):
             
             user_msg_indicator = element.locator('[class~="corner-superellipse/0.98"]')
 
-        
+            clean_msg=msg[msg.find(':')+1:].strip()
+
             if "ChatGPT" in msg or not user_msg_indicator.count()>0:
-                clean_msg=msg[msg.find(':')+1:].strip()
                 self.message_exists(clean_msg)
                 context_entry=("llm",clean_msg)
                 self.append_to_context(context_entry)
                 #break
 
             else:
+                context_entry=("user",clean_msg)
+                self.append_to_context(context_entry)
                 if "You" not in msg:
                     print(msg)
                     #raise UnrecognizedMessageFormat("Unexpected message format in DOM")
