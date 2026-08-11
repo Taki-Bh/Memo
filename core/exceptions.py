@@ -42,3 +42,7 @@ class APIKeyMissingError(LLMException):
     """Raised when an API key is missing for an LLM provider."""
 
     pass
+class UnrecognizedMessageFormat(LLMException):
+    """Raised when a message anomaly appears in the DOM"""
+
+    pass

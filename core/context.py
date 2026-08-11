@@ -6,4 +6,4 @@ class LLMContext:
     instruction:str
     goal: str
     variables: dict[str, Any] 
-    messages: list[dict[str, str]] 
+    messages: list[tuple[str, str]] 
