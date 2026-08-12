@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>859</width>
+    <height>637</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#centralwidget {
+    background-color: #0B0F14;
+    color: #E8EDF3;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">QWidget#centralwidget {
+    background-color: #0B0F14;
+}
+QLineEdit#chatInput {
+    background-color: #121A23;
+    color: #E8EDF3;
+    border: 1px solid #202B38;
+    border-radius: 16px;
+    padding: 12px 16px;
+}
+
+QWidget#chatPanel {
+    background-color: #121A23;
+    border: 1px solid #202B38;
+    border-radius: 18px;
+}</string>
+   </property>
+   <widget class="QLineEdit" name="chatInput">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>480</y>
+      <width>711</width>
+      <height>51</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="chatPanel" native="true">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>711</width>
+      <height>431</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">widget {
+    color: #E8EDF3;
+    font-family: &quot;Inter&quot;, &quot;Noto Sans&quot;, sans-serif;
+    font-size: 14px;
+}</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
