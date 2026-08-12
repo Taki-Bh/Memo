@@ -3,6 +3,7 @@
 from core.context import LLMContext
 from core.provider import LLMProvider
 from core.exceptions import *
+from core.streaming import stream_output,show_streamed_output,wait_for_streaming_output
 from navigator.navigator import navigator
 import time
 from utilities.utilities import get_sync_llm_msg
@@ -34,11 +35,15 @@ class ChatGPTBrowserProvider(LLMProvider):
         elements = navigator.page.locator("div[data-turn-id-container]")
         
         self.append_to_context(("user",prompt))
-        time.sleep(2)
+        response=""
         count=elements.count()
         print(f"count={count}")
-        
+        wait_for_streaming_output(elements)
+        count=elements.count()
+        print(f"count={count}")
+
         for i in range(0,count):
+            
             """print(f"    i={i}")
             print(f"    count={count}")"""
             
@@ -55,8 +60,7 @@ class ChatGPTBrowserProvider(LLMProvider):
                 context_entry=("llm",clean_msg)
                 self.append_to_context(context_entry)
                 if count-1==i:
-                   
-                    response=get_sync_llm_msg(element)
+                    response=show_streamed_output(element)
                 #break
 
             else:
