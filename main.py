@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         apply_shadow_to_widget(chat_panel)
         apply_shadow_to_widget(chat_input)
 
-
+#xd
 
 def main2():
     app = QApplication(sys.argv)
