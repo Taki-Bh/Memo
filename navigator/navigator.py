@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from playwright.sync_api import sync_playwright, BrowserContext, Page
-from core.exceptions import AppException, LLMException, LLMConfigurationError, LLMAuthenticationError, LLMRequestError, LLMResponseError, APIKeyMissingError
+from core.exceptions import AppException, LLMException, LLMConfigurationError, LLMAuthenticationError, LLMRequestError, LLMResponseError, APIKeyMissingError,ConnectionError
 
 class Navigator:
     def __init__(self, user_data_dir: str = "user_data"):
@@ -69,7 +69,10 @@ class Navigator:
 
     def goto(self, url: str,timeout: int = 30000):
         self._ensure_started()
-        self.page.goto(url,wait_until="domcontentloaded",timeout=timeout)
+        try:
+            self.page.goto(url,wait_until="domcontentloaded",timeout=timeout)
+        except Exception as e:
+            raise ConnectionError (e)
 
     def back(self):
         self._ensure_started()

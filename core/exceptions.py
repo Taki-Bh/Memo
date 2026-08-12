@@ -8,6 +8,11 @@ class AppException(Exception):
         self.message = message
         super().__init__(message)
 
+class ConnectionError(AppException):
+    """Raised when connection to AI fails"""
+
+    pass
+
 
 class LLMException(AppException):
     """Base exception for LLM-related errors."""
