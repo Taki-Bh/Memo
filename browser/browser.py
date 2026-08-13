@@ -4,10 +4,19 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, BrowserContext, Page
 from core.exceptions import AppException, LLMException, LLMConfigurationError, LLMAuthenticationError, LLMRequestError, LLMResponseError, APIKeyMissingError,ConnectionError
 
-class Navigator:
-    def __init__(self, user_data_dir: str = "user_data"):
-        self.user_data_dir = Path(user_data_dir)
+class Browser:
+    _instance = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
 
+        return cls._instance
+    def __init__(self, user_data_dir: str = "user_data"):
+        if getattr(self, "_initialized", False):
+            return
+        self._initialized = True
+        self.user_data_dir = Path(user_data_dir)
+       
         self._playwright = None
         self.context: BrowserContext | None = None
         self.page: Page | None = None
@@ -112,9 +121,8 @@ class Navigator:
     def _ensure_started(self):
         if self.page is None:
             raise RuntimeError(
-                "Navigator is not started. Call navigator.start() first."
+                "Browser is not started. Call navigator.start() first."
             )
 
 
 # Shared instance
-navigator = Navigator("user_data")

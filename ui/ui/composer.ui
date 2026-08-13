@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Composer</class>
+ <widget class="QWidget" name="Composer">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>760</width><height>64</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="composerOuterLayout">
+   <property name="leftMargin"><number>16</number></property>
+   <property name="topMargin"><number>10</number></property>
+   <property name="rightMargin"><number>16</number></property>
+   <property name="bottomMargin"><number>16</number></property>
+   <item>
+    <widget class="QWidget" name="composerCard">
+     <property name="minimumSize"><size><width>0</width><height>52</height></size></property>
+     <layout class="QHBoxLayout" name="composerLayout">
+      <property name="leftMargin"><number>10</number></property>
+      <property name="topMargin"><number>6</number></property>
+      <property name="rightMargin"><number>10</number></property>
+      <property name="bottomMargin"><number>6</number></property>
+      <property name="spacing"><number>6</number></property>
+      <item>
+       <widget class="GlassButton" name="attachmentButton">
+        <property name="text"><string>📎</string></property>
+        <property name="toolTip"><string>Attach a file</string></property>
+        <property name="minimumSize"><size><width>36</width><height>36</height></size></property>
+        <property name="maximumSize"><size><width>36</width><height>36</height></size></property>
+        <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="GlassButton" name="toolsButton">
+        <property name="text"><string>⚙</string></property>
+        <property name="toolTip"><string>Tools</string></property>
+        <property name="minimumSize"><size><width>36</width><height>36</height></size></property>
+        <property name="maximumSize"><size><width>36</width><height>36</height></size></property>
+        <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="AutoResizeTextEdit" name="messageInput">
+        <property name="minimumSize"><size><width>0</width><height>36</height></size></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="charCountLabel">
+        <property name="text"><string></string></property>
+        <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        <property name="minimumSize"><size><width>0</width><height>0</height></size></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="GlassButton" name="sendButton">
+        <property name="text"><string>➤</string></property>
+        <property name="toolTip"><string>Send message (Enter)</string></property>
+        <property name="minimumSize"><size><width>36</width><height>36</height></size></property>
+        <property name="maximumSize"><size><width>36</width><height>36</height></size></property>
+        <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+        <property name="enabled"><bool>false</bool></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AutoResizeTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>widgets.auto_resize_text_edit</header>
+  </customwidget>
+  <customwidget>
+   <class>GlassButton</class>
+   <extends>QPushButton</extends>
+   <header>widgets.glass_button</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

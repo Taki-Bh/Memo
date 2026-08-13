@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ChatView</class>
+ <widget class="QWidget" name="ChatView">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>960</width><height>760</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="chatViewLayout">
+   <property name="leftMargin"><number>0</number></property>
+   <property name="topMargin"><number>0</number></property>
+   <property name="rightMargin"><number>0</number></property>
+   <property name="bottomMargin"><number>0</number></property>
+   <property name="spacing"><number>0</number></property>
+
+   <item>
+    <widget class="QWidget" name="headerWidget">
+     <property name="minimumSize"><size><width>0</width><height>52</height></size></property>
+     <property name="maximumSize"><size><width>16777215</width><height>52</height></size></property>
+     <layout class="QHBoxLayout" name="headerLayout">
+      <property name="leftMargin"><number>20</number></property>
+      <property name="topMargin"><number>8</number></property>
+      <property name="rightMargin"><number>16</number></property>
+      <property name="bottomMargin"><number>8</number></property>
+      <property name="spacing"><number>10</number></property>
+      <item>
+       <widget class="QLabel" name="assistantNameLabel">
+        <property name="text"><string>Aurora</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="statusDot">
+        <property name="text"><string>●</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="statusLabel">
+        <property name="text"><string>Online</string></property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="headerSpacer">
+        <property name="orientation"><enum>Qt::Horizontal</enum></property>
+        <property name="sizeHint"><size><width>40</width><height>20</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QComboBox" name="modelSelectorCombo">
+        <property name="minimumSize"><size><width>140</width><height>30</height></size></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="GlassButton" name="conversationActionsButton">
+        <property name="text"><string>⋯</string></property>
+        <property name="minimumSize"><size><width>30</width><height>30</height></size></property>
+        <property name="maximumSize"><size><width>30</width><height>30</height></size></property>
+        <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <item>
+    <widget class="Line" name="headerSeparator">
+     <property name="orientation"><enum>Qt::Horizontal</enum></property>
+    </widget>
+   </item>
+
+   <item>
+    <widget class="QScrollArea" name="messageScrollArea">
+     <property name="widgetResizable"><bool>true</bool></property>
+     <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+     <property name="horizontalScrollBarPolicy"><enum>Qt::ScrollBarAlwaysOff</enum></property>
+     <widget class="QWidget" name="messagesContainer">
+      <property name="geometry"><rect><x>0</x><y>0</y><width>960</width><height>640</height></rect></property>
+      <layout class="QVBoxLayout" name="messagesLayout">
+       <property name="leftMargin"><number>0</number></property>
+       <property name="topMargin"><number>8</number></property>
+       <property name="rightMargin"><number>0</number></property>
+       <property name="bottomMargin"><number>8</number></property>
+       <property name="spacing"><number>2</number></property>
+       <item>
+        <spacer name="messagesBottomSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint"><size><width>20</width><height>40</height></size></property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+
+   <item>
+    <widget class="QWidget" name="composerContainer" native="true">
+     <property name="minimumSize"><size><width>0</width><height>64</height></size></property>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GlassButton</class>
+   <extends>QPushButton</extends>
+   <header>widgets.glass_button</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

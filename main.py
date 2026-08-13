@@ -33,10 +33,10 @@ class MainWindow(QMainWindow):
    def __init__(self):
         super().__init__()
 
-        uic.loadUi("Memo.ui", self)
+        uic.loadUi("ai_assistant_light.ui", self)
 
         # Find chatInput from Qt Designer
-        chat_input = self.findChild(QLineEdit, "chatInput")
+        """chat_input = self.findChild(QLineEdit, "chatInput")
         chat_panel = self.findChild(QWidget, "chatPanel")
         # Create shadow
         shadow = QGraphicsDropShadowEffect()
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
 
         # Apply shadow
         apply_shadow_to_widget(chat_panel)
-        apply_shadow_to_widget(chat_input)
+        apply_shadow_to_widget(chat_input)"""
 
 #xd
 
@@ -58,4 +58,4 @@ def main2():
 
     sys.exit(app.exec())
 if __name__ == "__main__":
-    main2()
+    main()

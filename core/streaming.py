@@ -1,14 +1,14 @@
 import time
 import sys
 
-def wait_for_streaming_output(elements):
+def wait_for_streaming_output(elements,ind):
     while True:
         time.sleep(0.5)
         count=elements.count()
         print(f"count = {count}")
         if count>0:
             element=elements.nth(count-1)
-            user_msg_indicator = element.locator('[class~="corner-superellipse/0.98"]')                
+            user_msg_indicator = element.locator(ind)                
             
             if not user_msg_indicator.count()>0:
                 return elements.nth(count-1)
