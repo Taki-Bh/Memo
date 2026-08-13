@@ -22,11 +22,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from widgets.chat_message import ChatMessage
-from widgets.composer import Composer
-from widgets.glass_button import GlassButton
-from widgets.typing_indicator import TypingIndicator
-from widgets.ui_loader import CustomUiLoader
+from ui.widgets.chat_message import ChatMessage
+from ui.widgets.composer import Composer
+from ui.widgets.glass_button import GlassButton
+from ui.widgets.typing_indicator import TypingIndicator
+from ui.widgets.ui_loader import CustomUiLoader
 
 UI_DIR = Path(__file__).resolve().parent.parent / "ui"
 

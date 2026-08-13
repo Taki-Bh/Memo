@@ -17,9 +17,11 @@ from pathlib import Path
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
-from widgets.chat_view import ChatView
-from widgets.sidebar import Sidebar
-from widgets.ui_loader import CustomUiLoader
+from ui.widgets.chat_view import ChatView
+from ui.widgets.sidebar import Sidebar
+from ui.widgets.ui_loader import CustomUiLoader
+
+from core.interface import get_response
 
 ROOT_DIR = Path(__file__).resolve().parent
 UI_DIR = ROOT_DIR / "ui"
@@ -47,9 +49,10 @@ DEMO_CONVERSATIONS = [
 
 class MockAssistant:
     """Stand-in for a real model/API call — replace freely."""
-
+    
     def reply_to(self, user_text: str) -> str:
-        return (
+        response=get_response(user_text)
+        """return (
             f"Here's a thought on **\"{user_text[:60]}\"**:\n\n"
             "This is a demo reply rendered through Qt's built-in Markdown "
             "support, so it can show:\n\n"
@@ -61,10 +64,11 @@ class MockAssistant:
             "    return f\"Hello, {name}!\"\n"
             "```\n\n"
             "Wire `MockAssistant.reply_to` up to a real API call whenever you're ready."
-        )
+        )"""
+        return response
 
 
-class AuroraApp:
+class MemoApp:
     def __init__(self):
         loader = CustomUiLoader({})
         self.window = loader.load_ui(UI_DIR / "main_window.ui")
@@ -154,11 +158,11 @@ def load_stylesheet(app: QApplication):
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("Aurora")
+    app.setApplicationName("Memo")
     load_stylesheet(app)
 
-    aurora = AuroraApp()
-    aurora.show()
+    memo= MemoApp()
+    memo.show()
 
     sys.exit(app.exec())
 

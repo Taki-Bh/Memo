@@ -4,6 +4,7 @@ from core.context import LLMContext
 from providers.chatgpt import ChatGPTProvider
 from core.interface import chat
 from core.streaming import stream_output
+from ui.main import mainUI
 def main():
     chat()
 
@@ -58,4 +59,4 @@ def main2():
 
     sys.exit(app.exec())
 if __name__ == "__main__":
-    main()
+    mainUI()

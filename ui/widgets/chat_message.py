@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from widgets.glass_button import GlassButton
+from ui.widgets.glass_button import GlassButton
 
 
 class ChatMessage(QWidget):

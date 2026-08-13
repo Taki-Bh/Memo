@@ -23,5 +23,7 @@ class ChatGPTBrowserProvider(LLMProvider):
         response = self.chat.get_latest_response()
 
         self.append_to_context(("llm", response))
+        
+        return response
 
         

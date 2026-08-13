@@ -17,9 +17,9 @@ from pathlib import Path
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
-from widgets.auto_resize_text_edit import AutoResizeTextEdit
-from widgets.glass_button import GlassButton
-from widgets.ui_loader import CustomUiLoader
+from ui.widgets.auto_resize_text_edit import AutoResizeTextEdit
+from ui.widgets.glass_button import GlassButton
+from ui.widgets.ui_loader import CustomUiLoader
 
 UI_DIR = Path(__file__).resolve().parent.parent / "ui"
 

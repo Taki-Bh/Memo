@@ -22,6 +22,16 @@ def init_interface():
     except Exception as e:
         print(f"\nError: {type(e).__name__}")
         print(e)
+context = LLMContext("","", {}, [])
+ 
+     # Automatically:
+     # - uses API if OPENAI_API_KEY exists
+     # - uses browser if it doesn't
+llm = ChatGPTProvider(context)   
+print(f"Using provider: {llm.mode}")
+def get_response(user_text:str):
+    return llm.generate(user_text)
+
 def chat():
     context = LLMContext("","", {}, [])
  

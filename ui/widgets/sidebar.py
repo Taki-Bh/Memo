@@ -12,9 +12,9 @@ from pathlib import Path
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
-from widgets.conversation_item import ConversationItem
-from widgets.glass_button import GlassButton
-from widgets.ui_loader import CustomUiLoader
+from ui.widgets.conversation_item import ConversationItem
+from ui.widgets.glass_button import GlassButton
+from ui.widgets.ui_loader import CustomUiLoader
 
 UI_DIR = Path(__file__).resolve().parent.parent / "ui"
 
