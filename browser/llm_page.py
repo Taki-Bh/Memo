@@ -1,7 +1,7 @@
 import queue
 import threading
 from browser.browser import Browser
-from browser.parser import ChatGPTStreamParser
+from browser.chatgpt_parser import ChatGPTStreamParser
 from core.streaming import *
 
 

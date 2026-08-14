@@ -1,7 +1,7 @@
 import threading
 from core.streaming import *
 from browser.llm_page import *
-from browser.parser import GeminiStreamParser
+from browser.gemini_parser import GeminiStreamParser
 import re
 def _parse_worker(body_bytes: bytes, response_queue: queue.Queue):
     """
