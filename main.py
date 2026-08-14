@@ -2,11 +2,11 @@
 
 from core.context import LLMContext
 from providers.chatgpt import ChatGPTProvider
-from core.interface import chat
+from core.interface import launch_in_terminal
 from core.streaming import stream_output
 
 def main():
-    chat()
+    launch_in_terminal()
 
 
 import sys
