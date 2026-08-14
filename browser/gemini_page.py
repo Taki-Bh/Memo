@@ -10,9 +10,10 @@ def _parse_worker(body_bytes: bytes, response_queue: queue.Queue):
     """
     try:
         text = body_bytes.decode("utf-8", errors="ignore")
+        
         if text.strip():
             parser = GeminiStreamParser()
-            response_text = parser.feed_text(text)
+            response_text = parser.extract_llm_response(text)
             if response_text.strip():
                 # Put cleaned result into the thread-safe queue
                 response_queue.put(response_text)
@@ -43,7 +44,7 @@ class GeminiPage(LLMPage):
                 with open("response_body.txt", "wb") as f:
                    f.write(body_bytes)
                    print("Response body written to response_body.txt")
-                show_resp(body_bytes.decode("utf-8", errors="ignore"))
+                
                 
                 # Spawn worker thread to parse body_bytes
                 worker = threading.Thread(
@@ -59,38 +60,15 @@ class GeminiPage(LLMPage):
                 print(f"[Stream Intercept Error]: {err}")
 
 
-def extract_llm_response(raw_payload):
-    responses = []
-    print(raw_payload)
-    # Regular expression to target the exact structure where Google's models output text
-    # It looks for patterns like: ["rc_...", ["Your response text here"], ...]
-    pattern = r'\\*?"rc_[a-zA-Z0-9]+\\*"\\*?,\s*\[\\*"(.*?)\\*"]'   
-    # Find all matches, accounting for escaped quotes in raw payloads
-    matches = re.findall(pattern, raw_payload)
-    print(f"Number of matches found: {len(matches)}")
-    for match in matches:
-        # Unescape escaped characters (like \\" to ")
-        cleaned_text = (
-            match.replace('\\"', '"')
-            .replace("\\\\", "\\")
-            .encode()
-            .decode("unicode_escape", errors="ignore")
-        )
-        # Filter out UI element labels (like "Longer", "Shorter", "Try again")
-        ui_noise = ["Longer", "Shorter", "Try again", "expand", "compress"]
-        if cleaned_text and cleaned_text not in responses and cleaned_text not in ui_noise:
-            responses.append(cleaned_text)
-
-    return responses
 
 
 # --- Example Usage ---
 # Paste your entire raw payload string inside the triple quotes below:
 
-def show_resp(raw_data):
+"""def show_resp(raw_data):
 
     extracted_messages = extract_llm_response(raw_data)
 
     print("Extracted LLM Responses:")
     for i, msg in enumerate(extracted_messages, 1):
-        print(f"{i}. {msg}")
+        print(f"{i}. {msg}")"""
