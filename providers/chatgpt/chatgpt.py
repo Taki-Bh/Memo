@@ -5,8 +5,8 @@ import os
 from core.context import LLMContext
 from core.provider import LLMProvider
 
-from providers.chatgpt_api import ChatGPTAPIProvider
-from providers.chatgpt_browser import ChatGPTBrowserProvider
+from providers.chatgpt.chatgpt_api import ChatGPTAPIProvider
+from providers.chatgpt.chatgpt_browser import ChatGPTBrowserProvider
 
 
 class ChatGPTProvider(LLMProvider):

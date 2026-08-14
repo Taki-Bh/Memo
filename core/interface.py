@@ -1,5 +1,6 @@
 from core.context import LLMContext
-from providers.chatgpt import ChatGPTProvider
+#from providers.chatgpt import ChatGPTProvider
+from providers.gemini.gemini import GeminiProvider
 import time
 def init_interface():
     context = LLMContext("","", {}, [])
@@ -7,7 +8,7 @@ def init_interface():
     # Automatically:
     # - uses API if OPENAI_API_KEY exists
     # - uses browser if it doesn't
-    llm = ChatGPTProvider(context)
+    llm = GeminiProvider(context)
 
     print(f"Using provider: {llm.mode}")
 
@@ -27,7 +28,7 @@ context = LLMContext("","", {}, [])
      # Automatically:
      # - uses API if OPENAI_API_KEY exists
      # - uses browser if it doesn't
-llm = ChatGPTProvider(context)   
+llm = GeminiProvider(context)   
 print(f"Using provider: {llm.mode}")
 def get_response(user_text:str):
     return llm.generate(user_text)
