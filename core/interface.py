@@ -33,14 +33,18 @@ def get_response(user_text:str):
     return llm.generate(user_text)
 
 def chat():
+    print("Morning")
     context = LLMContext("","", {}, [])
  
      # Automatically:
      # - uses API if OPENAI_API_KEY exists
      # - uses browser if it doesn't
     llm = ChatGPTProvider(context)   
+    print("Hello")
     print(f"Using provider: {llm.mode}")
-    while True:
+    llm.generate("Hello! Give me a one-sentence introduction.")
+    """while True:
+        
         prompt=input("user : ")
         try:
             response = llm.generate(
@@ -52,7 +56,7 @@ def chat():
 
         except Exception as e:
             print(f"\nError: {type(e).__name__}")
-            print(e)
+            print(e)"""
         
     
 
