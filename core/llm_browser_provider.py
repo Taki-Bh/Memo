@@ -11,13 +11,14 @@ class LLMBrowserProvider(LLMProvider):
         self.page=None
 
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str,await_response=True) -> str:
         self.append_to_context(("user", prompt))
 
         self.page.send_message(prompt)
-
-        response = self.page.get_latest_response()
-
+        if await_response:
+            response = self.page.get_latest_response()
+        else:
+            response = None
         self.append_to_context(("llm", response))
         
         return response

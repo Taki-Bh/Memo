@@ -5,7 +5,7 @@ import re
 import warnings
 
 SKILLS_DIR = "skills"
-
+SKILL_INSTRUCTION="Before responding to any task, check whether it matches a skill in your index. If it does, you must load and follow that skill before proceeding."
 def parse_frontmatter(md_path):
     """Extract YAML frontmatter (name, description) from a SKILL.md file
     without requiring a full YAML parser."""

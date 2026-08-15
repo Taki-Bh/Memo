@@ -50,8 +50,8 @@ DEMO_CONVERSATIONS = [
 class MockAssistant:
     """Stand-in for a real model/API call — replace freely."""
     
-    def reply_to(self, user_text: str) -> str:
-        response=get_response(user_text)
+    def reply_to(self, user_text: str,await_response=True) -> str:
+        response=get_response(user_text,await_response=await_response)
         """return (
             f"Here's a thought on **\"{user_text[:60]}\"**:\n\n"
             "This is a demo reply rendered through Qt's built-in Markdown "

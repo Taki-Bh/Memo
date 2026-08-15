@@ -1,6 +1,7 @@
 from core.context import LLMContext
 #from providers.chatgpt import ChatGPTProvider
 from providers.gemini.gemini import GeminiProvider
+from core.skills import SKILL_INSTRUCTION
 import time
 def init_interface():
     context = LLMContext("","", {}, [])
@@ -30,8 +31,8 @@ context = LLMContext("","", {}, [])
      # - uses browser if it doesn't
 llm = GeminiProvider(context)   
 print(f"Using provider: {llm.mode}")
-def get_response(user_text:str):
-    return llm.generate(user_text)
+def get_response(user_text:str,await_response=True) -> str:
+    return llm.generate(user_text,await_response=await_response)
 
 def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introduction."):
     print("Morning")
@@ -45,7 +46,8 @@ def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introducti
     
    
 
-        
+    
+    llm.generate(SKILL_INSTRUCTION,await_response=False)
     while True:
         
         prompt=input("user : ")
@@ -53,10 +55,10 @@ def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introducti
             response = llm.generate(
                 prompt
             )
-
-            print("\nResponse:")
-            print(response)
-            
+            if response:
+                print("\nResponse:")
+                print(response)
+                
 
         except Exception as e:
             print(f"\nError: {type(e).__name__}")

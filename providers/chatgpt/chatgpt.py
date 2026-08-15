@@ -57,5 +57,5 @@ class ChatGPTProvider(LLMProvider):
             self.provider = ChatGPTBrowserProvider(context)
             self.mode = "browser"
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str,await_response=True) -> str:
         return self.provider.generate(prompt)
