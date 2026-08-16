@@ -10,9 +10,15 @@ SKILL_INSTRUCTION="""
 """
 import re
 
+
+
+
 def parse_frontmatter(md_path):
-    """Extract YAML frontmatter (name, description) from a SKILL.md file
-    without requiring a full YAML parser."""
+    """Extract YAML frontmatter and body from a SKILL.md file.
+
+    Returns a dictionary including the parsed metadata, name, description,
+    and the full body content.
+    """
     with open(md_path, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -29,7 +35,9 @@ def parse_frontmatter(md_path):
 
         # Continuation line (indented) -> append to the previous key
         if raw_line[:1] in (" ", "\t") and current_key:
-            data[current_key] = (data[current_key] + " " + raw_line.strip()).strip()
+            data[current_key] = (
+                data[current_key] + " " + raw_line.strip()
+            ).strip()
             continue
 
         if ":" in raw_line:
@@ -42,8 +50,19 @@ def parse_frontmatter(md_path):
             data[key] = value
             current_key = key
 
-    return data
+    # Extract body content (everything after the frontmatter block)
+    body = content
+    parts = content.split("---", 2)
+    if len(parts) >= 3:
+        body = parts[2].strip()
 
+    # Addons to the dictionary while retaining all original metadata fields
+    return {
+        "metadata": data,
+        "name": data.get("name", ""),
+        "description": data.get("description", ""),
+        "body": body,
+    }
 
 def build_skill_index(skills_dir=SKILLS_DIR):
     index = []
@@ -101,7 +120,25 @@ def format_index_for_prompt(index):
         lines.append(f"- {skill['name']}: {skill['description']}")
     return "\n".join(lines)
 
+def fetch_skill(path: str):
+    """Given a path to a SKILL.md file, reads it and returns a dictionary
 
+    containing its metadata and body content.
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Skill file not found at: {path}")
+
+
+    data = parse_frontmatter(path)
+    print(data)
+
+    return {
+        "path": path,
+        "name": data["name"] or "",
+        "description": data["description"] or "",
+        "metadata": data["metadata"] ,
+        "body": data["body"],
+    }
 """if __name__ == "__main__":
     skills_dir = sys.argv[1] if len(sys.argv) > 1 else SKILLS_DIR
 

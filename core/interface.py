@@ -3,6 +3,7 @@ from core.context import LLMContext
 from providers.gemini.gemini import GeminiProvider
 from core.skills import SKILL_INSTRUCTION
 import time
+from agents.skill_router import SkillRouterAgent
 def init_interface():
     context = LLMContext("","", {}, [])
 
@@ -47,16 +48,16 @@ def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introducti
    
 
     
-    llm.generate(SKILL_INSTRUCTION+f"\n Available skills {llm.skill_index}",await_response=False)
+    #llm.generate(SKILL_INSTRUCTION+f"\n Available skills {llm.skill_index}",await_response=False)
+    skill_router=SkillRouterAgent(llm)
     while True:
         
         prompt=input("user : ")
         try:
-            response = llm.generate(
-                prompt
-            )
+            #response = llm.generate(prompt)
+            response=skill_router.handleRequest(prompt)
             if response:
-                
+
                 print("\nResponse:")
                 print(response)
                 

@@ -1,3 +1,9 @@
+
+from core.agent import Agent
+from core.provider import LLMProvider
+from core.skills import *
+import json
+import time
 ROUTER_PROMPT="""
 === STAGE 1: SKILL ROUTER PROMPT ===
 
@@ -52,6 +58,7 @@ You are now a {{SKILL_NAME}} Specialist, operating strictly under the loaded ski
 
 ## Constraints
 - Follow the skill's workflow, constraints, and output format exactly. Do not deviate.
+- Only give the user SKILL.md contents as a response nothing more nothing less.
 - You have no ability to save, upload, or persist files unless a real tool/function result is explicitly provided to you in this call. Never narrate an attempt, an error, or a failure (e.g. "authentication error," "couldn't save") for an action you were not actually given a tool to perform. If persistence is needed, state once, plainly, that it's outside what you can do here, and output the content instead.
 - Do not mention the router, the skill index, or the loading process. Respond only with the task output the skill defines.
 
@@ -83,3 +90,22 @@ You are now operating under the skill-creator process to draft a new skill.
 ## Output
 1. The complete SKILL.md content, verbatim, in a single block.
 2. Then the actual task output, if applicable."""
+
+
+class SkillRouterAgent(Agent):
+    instruction :str =""
+    def __init__(self,provider : LLMProvider):
+        super().__init__(provider)
+        self.instruction=ROUTER_PROMPT.replace("{SKILL_INDEX_JSON}",str(provider.skill_index))
+    def handleRequest(self,prompt : str):
+        self.instruction=self.instruction.replace("{USER_PROMPT}",prompt)
+        response=self.provider.generate(self.instruction)
+        response=json.loads(response)
+        print(response["path"])
+        skill=fetch_skill(response["path"])
+        load_prompt=LOAD_PROMPT.replace("{{SKILL_NAME}}",skill.get("name")).replace("{SKILL_MD_CONTENT}",skill.get("body")).replace("{USER_PROMPT}",prompt)
+        time.sleep(5)
+        print("---------------\n------------\n----------")
+        response=self.provider.generate(load_prompt)
+        print(response)
+    
