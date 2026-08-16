@@ -56,6 +56,7 @@ def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introducti
                 prompt
             )
             if response:
+                
                 print("\nResponse:")
                 print(response)
                 

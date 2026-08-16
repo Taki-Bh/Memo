@@ -6,16 +6,7 @@ import warnings
 
 SKILLS_DIR = "skills"
 SKILL_INSTRUCTION="""
-    STRICT RULE: For every incoming task, before producing any other output, compare it against the skill index below. This comparison is mandatory even if you are confident you already know how to complete the task without it — confidence is not a reason to skip this step.
 
-If the task matches a skill's trigger conditions, your entire response must be a single JSON object in the exact form {"load_skill": "<path>"} and nothing else. No preamble, no explanation, no partial answer, no surrounding text, and no starting the task itself in the same turn. Emitting the JSON is the only valid action when a skill matches — you are not permitted to complete the task directly instead, even partially.
-
-Once the corresponding skill's content is loaded back into context on the next turn, follow its instructions and begin the work. Respond with only the output the task requires — no "Here is the thing you requested," "I found a matching skill," or similar preamble, and no confirmation that a skill was loaded or followed.
-
-If no skill in the index matches, skip the JSON step entirely and respond normally.
-
-Available skills:
-[{'name': 'skill-creator', 'description': '...', 'folder': 'skill-creator', 'path': 'skills/skill-creator/SKILL.md'}]
 """
 import re
 
