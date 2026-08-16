@@ -114,36 +114,7 @@ class SkillRouterAgent(Agent):
             # 1. Define the base parent folder
             parent_dir = Path("skills")
             
-            # 2. Construct the full path: skills / skill_name / file_name
-            
-            match = re.match(r"^---\s*\n(.*?)\n---\s*\n", response, re.DOTALL)
-
-            if not match:
-                return None
-            
-            frontmatter_raw = match.group(1)
-            data = {}
-            current_key = None
-            for raw_line in frontmatter_raw.splitlines():
-                if not raw_line.strip() or raw_line.strip().startswith("#"):
-                    continue
-        # Continuation line (indented) -> append to the previous key
-                if raw_line[:1] in (" ", "\t") and current_key:
-                    data[current_key] = (
-                        data[current_key] + " " + raw_line.strip()
-                    ).strip()
-                    continue
-        
-                if ":" in raw_line:
-                    key, _, value = raw_line.partition(":")
-                    key = key.strip()
-                    value = value.strip().strip('"').strip("'")
-                    # ">" or "|" alone means "block scalar starts on next line" -> not real content
-                    if value in (">", "|", ">-", "|-"):
-                        value = ""
-                    data[key] = value
-                    current_key = key
-            
+            data=parse_frontmatter_content(response)
             skill_dir = parent_dir / data["name"]
             file_path = skill_dir / Path("SKILL.md")
             try:

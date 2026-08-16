@@ -11,17 +11,7 @@ SKILL_INSTRUCTION="""
 import re
 
 
-
-
-def parse_frontmatter(md_path):
-    """Extract YAML frontmatter and body from a SKILL.md file.
-
-    Returns a dictionary including the parsed metadata, name, description,
-    and the full body content.
-    """
-    with open(md_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
+def parse_frontmatter_content(content):
     match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
     if not match:
         return None
@@ -63,6 +53,18 @@ def parse_frontmatter(md_path):
         "description": data.get("description", ""),
         "body": body,
     }
+
+def parse_frontmatter(md_path):
+    """Extract YAML frontmatter and body from a SKILL.md file.
+
+    Returns a dictionary including the parsed metadata, name, description,
+    and the full body content.
+    """
+    with open(md_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return parse_frontmatter_content(content)
+
+    
 
 def build_skill_index(skills_dir=SKILLS_DIR):
     index = []
