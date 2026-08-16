@@ -4,6 +4,7 @@ from core.provider import LLMProvider
 from core.skills import *
 import json
 import time
+from pathlib import Path
 ROUTER_PROMPT="""
 === STAGE 1: SKILL ROUTER PROMPT ===
 
@@ -101,11 +102,60 @@ class SkillRouterAgent(Agent):
         self.instruction=self.instruction.replace("{USER_PROMPT}",prompt)
         response=self.provider.generate(self.instruction)
         response=json.loads(response)
-        print(response["path"])
+        action=response["action"]
+       
         skill=fetch_skill(response["path"])
         load_prompt=LOAD_PROMPT.replace("{{SKILL_NAME}}",skill.get("name")).replace("{SKILL_MD_CONTENT}",skill.get("body")).replace("{USER_PROMPT}",prompt)
         time.sleep(5)
         print("---------------\n------------\n----------")
         response=self.provider.generate(load_prompt)
+        
+        if skill["name"]=="skill-creator":
+            # 1. Define the base parent folder
+            parent_dir = Path("skills")
+            
+            # 2. Construct the full path: skills / skill_name / file_name
+            
+            match = re.match(r"^---\s*\n(.*?)\n---\s*\n", response, re.DOTALL)
+
+            if not match:
+                return None
+            
+            frontmatter_raw = match.group(1)
+            data = {}
+            current_key = None
+            for raw_line in frontmatter_raw.splitlines():
+                if not raw_line.strip() or raw_line.strip().startswith("#"):
+                    continue
+        # Continuation line (indented) -> append to the previous key
+                if raw_line[:1] in (" ", "\t") and current_key:
+                    data[current_key] = (
+                        data[current_key] + " " + raw_line.strip()
+                    ).strip()
+                    continue
+        
+                if ":" in raw_line:
+                    key, _, value = raw_line.partition(":")
+                    key = key.strip()
+                    value = value.strip().strip('"').strip("'")
+                    # ">" or "|" alone means "block scalar starts on next line" -> not real content
+                    if value in (">", "|", ">-", "|-"):
+                        value = ""
+                    data[key] = value
+                    current_key = key
+            
+            skill_dir = parent_dir / data["name"]
+            file_path = skill_dir / Path("SKILL.md")
+            try:
+                # 3. Create the directories (parents=True creates 'skills' and the skill folder if missing)
+                skill_dir.mkdir(parents=True, exist_ok=True)
+                
+                # 4. Write the file
+                file_path.write_text(response, encoding="utf-8")
+                
+                return f"Successfully created skill file at: {file_path.absolute()}"
+            except Exception as e:
+                return f"Error creating skill file: {str(e)}"
+                    
         print(response)
     
