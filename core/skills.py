@@ -5,7 +5,20 @@ import re
 import warnings
 
 SKILLS_DIR = "skills"
-SKILL_INSTRUCTION="Before responding to any task, check whether it matches a skill in your index. If it does, you must load and follow that skill before proceeding."
+SKILL_INSTRUCTION="""
+    STRICT RULE: For every incoming task, before producing any other output, compare it against the skill index below. This comparison is mandatory even if you are confident you already know how to complete the task without it — confidence is not a reason to skip this step.
+
+If the task matches a skill's trigger conditions, your entire response must be a single JSON object in the exact form {"load_skill": "<path>"} and nothing else. No preamble, no explanation, no partial answer, no surrounding text, and no starting the task itself in the same turn. Emitting the JSON is the only valid action when a skill matches — you are not permitted to complete the task directly instead, even partially.
+
+Once the corresponding skill's content is loaded back into context on the next turn, follow its instructions and begin the work. Respond with only the output the task requires — no "Here is the thing you requested," "I found a matching skill," or similar preamble, and no confirmation that a skill was loaded or followed.
+
+If no skill in the index matches, skip the JSON step entirely and respond normally.
+
+Available skills:
+[{'name': 'skill-creator', 'description': '...', 'folder': 'skill-creator', 'path': 'skills/skill-creator/SKILL.md'}]
+"""
+import re
+
 def parse_frontmatter(md_path):
     """Extract YAML frontmatter (name, description) from a SKILL.md file
     without requiring a full YAML parser."""
@@ -18,13 +31,25 @@ def parse_frontmatter(md_path):
 
     frontmatter_raw = match.group(1)
     data = {}
-    for line in frontmatter_raw.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
+    current_key = None
+    for raw_line in frontmatter_raw.splitlines():
+        if not raw_line.strip() or raw_line.strip().startswith("#"):
             continue
-        if ":" in line:
-            key, _, value = line.partition(":")
-            data[key.strip()] = value.strip().strip('"').strip("'")
+
+        # Continuation line (indented) -> append to the previous key
+        if raw_line[:1] in (" ", "\t") and current_key:
+            data[current_key] = (data[current_key] + " " + raw_line.strip()).strip()
+            continue
+
+        if ":" in raw_line:
+            key, _, value = raw_line.partition(":")
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            # ">" or "|" alone means "block scalar starts on next line" -> not real content
+            if value in (">", "|", ">-", "|-"):
+                value = ""
+            data[key] = value
+            current_key = key
 
     return data
 

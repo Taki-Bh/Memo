@@ -15,10 +15,10 @@ class LLMBrowserProvider(LLMProvider):
         self.append_to_context(("user", prompt))
 
         self.page.send_message(prompt)
-        if await_response:
-            response = self.page.get_latest_response()
-        else:
-            response = None
+        
+        response = self.page.get_latest_response(await_response=await_response)
+       
+            
         self.append_to_context(("llm", response))
         
         return response

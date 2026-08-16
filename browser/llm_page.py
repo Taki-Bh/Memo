@@ -60,6 +60,7 @@ class LLMPage:
             self.response_queue.queue.clear()
 
     def send_message(self, prompt: str):
+        
         # Clear out any residual responses from prior prompts
         self._clear_queue()
 
@@ -71,7 +72,7 @@ class LLMPage:
 
    
 
-    def get_latest_response(self, timeout_ms: int = 60000) -> str:
+    def get_latest_response(self, timeout_ms: int = 60000, await_response : bool = True) -> str:
         """
         Polls the queue while keeping Playwright's event loop alive.
         Prints and returns the parsed response string or raises a TimeoutError.
@@ -90,7 +91,7 @@ class LLMPage:
                 print(retrieved_text)
                 print("=== RETRIEVED TEXT END ===\n")
                 
-                return retrieved_text
+                return retrieved_text if await_response else None 
             except queue.Empty:
                 # Non-blocking wait keeps Playwright listening to network events
                 self.page.wait_for_timeout(poll_interval)

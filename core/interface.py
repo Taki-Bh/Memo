@@ -47,7 +47,7 @@ def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introducti
    
 
     
-    llm.generate(SKILL_INSTRUCTION,await_response=False)
+    llm.generate(SKILL_INSTRUCTION+f"\n Available skills {llm.skill_index}",await_response=False)
     while True:
         
         prompt=input("user : ")
