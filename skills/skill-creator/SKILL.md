@@ -24,8 +24,7 @@ only the actual content is written by the agent.
 - "Update/fix the X skill" (X is an existing skill, not this one)
 
 ## Step 1 — Capture intent
-
-Don't ask what can be inferred from context. If the user just said "turn
+Infer reasonable defaults from the user's request. For broad requests such as ‘create a module that does quaternion math,’ infer the name, common operations, output format, and resources without asking. Ask only when a required decision cannot reasonably be inferred.. If the user just said "turn
 this into a skill," extract the steps from what was actually done in the
 conversation rather than re-asking.
 
