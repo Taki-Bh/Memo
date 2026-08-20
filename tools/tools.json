@@ -1,0 +1,60 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "read",
+      "description": "Read a file or list the contents of a directory. For files, returns the text contents. For directories, returns the names and types of entries.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the file or directory to read."
+          }
+        },
+        "required": ["path"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "write",
+      "description": "Write text content to a file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path of the file to write."
+          },
+          "content": {
+            "type": "string",
+            "description": "Text content to write to the file."
+          }
+        },
+        "required": ["path", "content"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "exec",
+      "description": "Execute a shell command and return its output.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The shell command to execute."
+          }
+        },
+        "required": ["command"],
+        "additionalProperties": false
+      }
+    }
+  }
+]
