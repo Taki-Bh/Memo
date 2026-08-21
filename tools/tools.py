@@ -61,7 +61,7 @@ TOOLS = {
     "write": write,
     "exec": exec,
 }
-TOOLSS = [
+TOOLS_DEFINITIONS = [
     {
         "type": "function",
         "function": {

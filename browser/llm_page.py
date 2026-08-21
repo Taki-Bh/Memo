@@ -62,6 +62,7 @@ class LLMPage:
     def send_message(self, prompt: str):
         
         # Clear out any residual responses from prior prompts
+        time.sleep(1)
         self._clear_queue()
 
         prompt_input = self.page.locator(self.PROMPT_SELECTOR)

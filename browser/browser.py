@@ -80,6 +80,7 @@ class Browser:
         self._ensure_started()
         try:
             self.page.goto(url,wait_until="domcontentloaded",timeout=timeout)
+            self.page.wait_for_load_state("load")
             print("dom content loaded!")
         except Exception as e:
             raise ConnectionError (e)

@@ -24,7 +24,10 @@ class GeminiPage(LLMPage):
     # Updated selectors based on your UI breakdown
     PROMPT_SELECTOR = '.ql-editor'
     SUBMIT_SELECTOR = 'gem-icon-button.send-button'
+    def send_message(self, prompt):
+        time.sleep(1)
 
+        return super().send_message(prompt)
     def handle_response(self, response):
         url = response.url
         #print(response.url)
