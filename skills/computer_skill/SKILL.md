@@ -17,7 +17,7 @@ The skill provides operational guidance. It does not contain the implementation 
 
 The computer skill may use these tools when they are registered and available:
 
-- `read` — inspect a file or list a directory.
+- `read` — inspect a file .
 - `write` — create or modify a text file.
 - `exec` — execute a shell command.
 
@@ -38,7 +38,7 @@ Before changing an unfamiliar resource:
 
 Use the simplest tool capable of completing the task.
 
-- Reading a file or directory → `read`
+- Reading a file → `read`
 - Creating or modifying a text file → `write`
 - Running a command or program → `exec`
 
@@ -83,8 +83,9 @@ Do not repeatedly execute the same failing operation without understanding the f
 
 When working with files:
 
-- Use `read` to inspect files and directories.
+- Use `read` to inspect files.
 - Use `write` to create or modify text files.
+- Use `exec` with the appropriate arguments for other tasks.
 - Preserve unrelated existing content.
 - Prefer explicit paths when possible.
 - Verify important writes.

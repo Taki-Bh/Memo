@@ -4,7 +4,7 @@ import re
 from tools.tools import TOOLS_DEFINITIONS,TOOLS
 from agents.skills_prompts import *
 from agents.skill_store import *
-
+from core.runner import Runner
 
 def extract_skill_state(response: str):
     """Pull the <skill_state>{...}</skill_state> block out of an executor response.
@@ -34,7 +34,7 @@ class SkillExecutionLoop:
     def __init__(self, provider, tools, max_iterations: int = 20):
         self.provider = provider
         self.tools = tools
-        self.max_iterations = max_iterations
+        self.max_iterations = max_iterations   
 
     def execute(
         self,
@@ -78,7 +78,7 @@ class SkillExecutionLoop:
                     result,
                 )
 
-                continue
+                
 
             # ---------------------------------------------------------
             # 2. Normal skill response.
@@ -136,75 +136,74 @@ class SkillExecutionLoop:
 
     def _parse_tool_call(self, raw_response):
         """
-        Extract a tool-call dictionary from the LLM response.
+        Extract and validate a tool-call dictionary from an LLM response.
 
         Expected format:
 
+        <call-block>
         {
-            "name": "read",
-            "argv": ["skills/example/SKILL.md"],
+            "tool_path": "tools/tools.py",
+            "function_name": "read",
+            "argv": "~",
             "argc": 1
         }
+        </call-block>
         """
 
+        if not isinstance(raw_response, str):
+            return None
+
+        start_tag = "<call-block>"
+        end_tag = "</call-block>"
+
+        start = raw_response.find(start_tag)
+        end = raw_response.find(end_tag)
+
+        if start == -1 or end == -1 or end <= start:
+            return None
+
+        json_text = raw_response[
+            start + len(start_tag):end
+        ].strip()
+
         try:
-            data = json.loads(raw_response)
+            data = json.loads(json_text)
         except json.JSONDecodeError:
             return None
 
         if not isinstance(data, dict):
             return None
 
-        if "function_name" not in data:
+        required_keys = {
+            "op_name",
+            "cmd",
+
+        }
+
+        if not required_keys.issubset(data):
             return None
 
-        if "argv" not in data:
+        if not isinstance(data["op_name"], str):
             return None
 
-        if "argc" not in data:
+        if not isinstance(data["cmd"], str):
             return None
+
 
         return data
 
     def _execute_tool(self, call):
-        name = call["function_name"]
-        argv = call["argv"]
-        argc = call["argc"]
+        name = call["op_name"]
+        cmd = call["cmd"]
 
-        # Validate argc.
-        if argc != len(argv):
-            return {
-                "success": False,
-                "error": (
-                    f"Invalid tool call: argc={argc}, "
-                    f"but argv contains {len(argv)} arguments."
-                ),
-            }
 
-        # Validate tool existence.
-        if name not in self.tools:
-            return {
-                "success": False,
-                "error": f"Unknown tool: {name!r}",
-            }
-
-        tool = self.tools[name]
-
-        try:
-            result = tool(*argv)
-
-            return {
-                "success": True,
-                "tool": name,
-                "result": result,
-            }
-
-        except Exception as e:
-            return {
-                "success": False,
-                "tool": name,
-                "error": str(e),
-            }
+   
+        if name=="exec":
+            print(f"executing {cmd}")
+            input()
+            return Runner.run(str(cmd))
+            
+    
 
     def _update_prompt_state(self, state, tool_call, result):
         """

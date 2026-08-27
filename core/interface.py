@@ -30,7 +30,7 @@ context = LLMContext("","", {}, [])
      # Automatically:
      # - uses API if OPENAI_API_KEY exists
      # - uses browser if it doesn't
-llm = GeminiProvider(context)   
+llm = ChatGPTProvider(context)   
 print(f"Using provider: {llm.mode}")
 def get_response(user_text:str,await_response=True) -> str:
     return llm.generate(user_text,await_response=await_response)
