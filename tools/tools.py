@@ -25,7 +25,7 @@ def read(path: str) -> str:
 
 def write(path: str, content: str) -> str:
     """Write text content to a file."""
-    file_path = Path(path)
+    file_path = Path(path).expanduser()
 
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(content, encoding="utf-8")
@@ -52,7 +52,7 @@ def exec(command: str) -> str:
         raise RuntimeError(
             f"Command failed with exit code {result.returncode}:\n{output}"
         )
-
+    print(output)
     return output
 
 
@@ -67,9 +67,9 @@ TOOLS_DEFINITIONS = [
         "function": {
             "name": "read",
             "description": (
-                "Read a file or list the contents of a directory. "
-                "For files, returns the text contents. "
-                "For directories, returns the names and types of entries."
+                "Read a file "
+                "For files"
+               
             ),
             "parameters": {
                 "type": "object",

@@ -147,6 +147,7 @@ When execution is required, emit exactly ONE call block:
 <call-block>
 {
   "op_name": "read|write|exec",
+  "args": "arguments of read/write in sucession separated by space",
   "cmd": "complete bash command"
 }
 </call-block>
@@ -175,7 +176,7 @@ Read:
 <call-block>
 {
   "op_name": "read",
-  "cmd": " \"path/to/file\""
+  "args": " path/to/file"
 }
 </call-block>
 
@@ -184,7 +185,7 @@ Write:
 <call-block>
 {
   "op_name": "write",
-  "cmd": "\"path/to/file\" \"content\""
+  "args": "path/to/file || content"
 }
 </call-block>
 

@@ -13,4 +13,6 @@ class Runner:
         return read(path)
     @staticmethod
     def write(path,text):
+        print(path)
+        print(text)
         return write(path,text)

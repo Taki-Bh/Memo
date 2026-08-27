@@ -176,32 +176,38 @@ class SkillExecutionLoop:
 
         required_keys = {
             "op_name",
-            "cmd",
 
         }
 
         if not required_keys.issubset(data):
             return None
 
-        if not isinstance(data["op_name"], str):
+        """if not isinstance(data["op_name"], str):
             return None
 
         if not isinstance(data["cmd"], str):
-            return None
+            return None"""
 
 
         return data
 
-    def _execute_tool(self, call):
-        name = call["op_name"]
-        cmd = call["cmd"]
-
-
+    def _execute_tool(self, call:dict):
+        print(call)
+        name = call.get("op_name")
+        args = call.get("args") or ""
+        cmd=call.get("cmd") or ""
+        print(call)
+        print(f"name={name}\n args={args} \n cmd={cmd}")
    
         if name=="exec":
             print(f"executing {cmd}")
-            input()
+           
             return Runner.run(str(cmd))
+        if name =="write":
+            sep_index=args.find("||")
+            return Runner.write(args[:sep_index],args[sep_index+1:])
+        if name== "read":
+            return Runner.read(args)
             
     
 
