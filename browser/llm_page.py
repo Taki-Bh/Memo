@@ -5,28 +5,62 @@ from browser.chatgpt_parser import ChatGPTStreamParser
 from core.streaming import *
 
 
+import json
+from bs4 import BeautifulSoup
+
+
+
+import html
+import json
+import queue
+from bs4 import BeautifulSoup
+
+
 def _parse_worker(body_bytes: bytes, response_queue: queue.Queue):
     """
     Runs strictly in a background Python thread.
-    Parses and cleans the SSE stream text without touching Playwright objects.
+    Extracts the final assistant message from the HTTP response.
     """
     try:
         text = body_bytes.decode("utf-8", errors="ignore")
-        if text.strip():
-            parser = ChatGPTStreamParser()
-            response_text = parser.feed_text(text)
-            if response_text.strip():
-                # Put cleaned result into the thread-safe queue
-                response_queue.put(response_text)
+
+        if not text.strip():
+            return
+
+        soup = BeautifulSoup(text, "html.parser")
+
+        element = soup.select_one(
+            '[data-conversation-control="complete"][data-conversation]'
+        )
+
+        if not element:
+            return
+
+        # HTML attributes are escaped (&quot;, etc.)
+        conversation = json.loads(
+            html.unescape(element["data-conversation"])
+        )
+
+        # Get the final assistant message
+        for message in reversed(conversation.get("messages", [])):
+            if message.get("role") == "assistant":
+                response_text = message.get("content", "").strip()
+
+                if response_text:
+                    response_queue.put(response_text)
+
+                return
+
     except Exception as err:
         print(f"[Thread Parse Error]: {err}")
+
 
 
 class LLMPage:
 
     URL = "https://chatgpt.com/"
-    PROMPT_SELECTOR = "#prompt-textarea"
-    SUBMIT_SELECTOR = "#composer-submit-button"
+    PROMPT_SELECTOR = "#mobile-composer-prompt"
+    SUBMIT_SELECTOR = "button[data-composer-submit]"
    
 
     def __init__(self):
@@ -98,6 +132,57 @@ class LLMPage:
                 elapsed += poll_interval
 
         raise TimeoutError("Timed out waiting for ChatGPT stream response.")
+    def handle_request_finished(self, request):
+        if "/unauth-mweb/conversation/updates" not in request.url:
+            return
+
+        print("CONVERSATION REQUEST FINISHED")
+
+        response = request.response()
+
+        if not response:
+            return
+
+        try:
+            body = response.body()
+            print("BODY:", len(body))
+
+            threading.Thread(
+                target=_parse_worker,
+                args=(body, self.response_queue),
+                daemon=True,
+            ).start()
+
+        except Exception as e:
+            print("BODY ERROR:", e)
+    def handle_response2(self, response):
+        if "/unauth-mweb/conversation/updates" not in response.url:
+            return
+        print("IT IS THE API")
+        selec=self.page.wait_for_selector(
+            '[data-conversation-control="complete"]',
+            timeout=30000
+        )
+        complete = self.page.locator('[data-conversation-control="complete"]')
+
+        print("DONE")
+        print(complete.inner_text())
+        if response.status != 200:
+            return
+
+        try:
+            # IMPORTANT: capture immediately.
+            time.sleep(5)
+            body = response.body()
+            print(body)
+            threading.Thread(
+                target=_parse_worker,
+                args=(body, self.response_queue),
+                daemon=True
+            ).start()
+
+        except Exception as err:
+            print(f"[Stream Intercept Error]: {err}")    
 
     def handle_response(self, response):
         url = response.url
@@ -116,10 +201,12 @@ class LLMPage:
             "backend-api/conversation" in url
             or "backend-anon/f/conversation" in url
             or "/conversation" in url
+
         )
         is_sse = "text/event-stream" in content_type
 
         if is_chat_api or is_sse:
+            print("YES CHAT API")
             try:
                 # Filter out OPTIONS preflights and error codes
                 if response.status != 200:

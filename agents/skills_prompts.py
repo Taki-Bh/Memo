@@ -237,28 +237,29 @@ If a Runner call is required for the current turn, output ONLY the call-block.
 
 ---
 
-## Multi-Turn State
+##Task State
 
-If the skill is not complete after this turn, include this state block:
+Complete the task only when all requested requirements and necessary actions are finished and the result is usable. Never claim completion while work remains.
 
-<skill_state>
+If the task is not complete, append:
+
+<task_state>
 {
-  "skill_path": "path/to/skill.md",
-  "last_checkpoint": "short_label",
-  "status": "in_progress|awaiting_user_input|blocked|done",
-  "last_question_to_user": "... or null",
-  "context": {}
+"last_checkpoint": "short_label",
+"status": "in_progress|awaiting_user_input|blocked|done",
+"last_question_to_user": "... or null",
+"remaining_work": ["..."],
+"context": {}
 }
-</skill_state>
+</task_state>
 
-Use:
+*in_progress: more work remains and can continue.
+*awaiting_user_input: user input is required.
+*blocked: an external limitation prevents progress.
+*remaining_work: concrete tasks or steps still required before completion.
+*context: important facts, decisions, constraints, or intermediate results needed to continue the task across turns.
 
-- `in_progress` — more skill steps or execution remain.
-- `awaiting_user_input` — user input is required.
-- `blocked` — progress cannot continue.
-- `done` — the skill is completely finished.
-
-If the skill completes in this turn, omit the state block.
+If fully complete, omit the state block.
 
 ---
 

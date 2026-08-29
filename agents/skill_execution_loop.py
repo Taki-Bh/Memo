@@ -7,10 +7,10 @@ from agents.skill_store import *
 from core.runner import Runner
 
 def extract_skill_state(response: str):
-    """Pull the <skill_state>{...}</skill_state> block out of an executor response.
+    """Pull the <task_state>{...}</task_state> block out of an executor response.
     Returns (state_or_None, cleaned_response_text)."""
-    match = re.search(r"<skill_state>\s*(\{.*?\})\s*</skill_state>", response, re.DOTALL)
-    cleaned = re.sub(r"<skill_state>.*?</skill_state>", "", response, flags=re.DOTALL).strip()
+    match = re.search(r"<task_state>\s*(\{.*?\})\s*</task_state>", response, re.DOTALL)
+    cleaned = re.sub(r"<task_state>.*?</task_state>", "", response, flags=re.DOTALL).strip()
     if not match:
         return None, cleaned
     try:
@@ -56,6 +56,7 @@ class SkillExecutionLoop:
                         .replace("{{ORIGINAL_USER_PROMPT}}", user_prompt)
                         
                     )
+        print("Hello WOrld!")
         raw_response = self.provider.generate(prompt)
 
         for iteration in range(self.max_iterations):
@@ -84,7 +85,10 @@ class SkillExecutionLoop:
             # 2. Normal skill response.
             # ---------------------------------------------------------
             new_state, cleaned_response = extract_skill_state(raw_response)
-
+            print(new_state)
+            if not new_state:
+                    resp=self.provider.generate("You forgot the state block")
+                    new_state = extract_skill_state(resp)
             if new_state:
                 current_state = new_state
 
