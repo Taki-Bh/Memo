@@ -17,6 +17,7 @@ def extract_skill_state(response: str):
         state = json.loads(match.group(1))
     except json.JSONDecodeError:
         return None, cleaned
+    print(f"state_dict={state}")
     if not REQUIRED_STATE_KEYS.issubset(state) or state.get("status") not in VALID_STATUSES:
         return None, cleaned
     return state, cleaned
@@ -88,7 +89,8 @@ class SkillExecutionLoop:
             print(new_state)
             if not new_state:
                     resp=self.provider.generate("You forgot the state block")
-                    new_state = extract_skill_state(resp)
+                    new_state ,_= extract_skill_state(resp)
+            print(new_state)
             if new_state:
                 current_state = new_state
 

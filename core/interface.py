@@ -30,7 +30,7 @@ context = LLMContext("","", {}, [])
      # Automatically:
      # - uses API if OPENAI_API_KEY exists
      # - uses browser if it doesn't
-llm = GeminiProvider(context)   
+llm = ChatGPTProvider(context)   
 print(f"Using provider: {llm.mode}")
 def get_response(user_text:str,await_response=True) -> str:
     return llm.generate(user_text,await_response=await_response)
@@ -53,18 +53,19 @@ def launch_in_terminal(user_text:str = "Hello! Give me a one-sentence introducti
     while True:
         
         prompt=input("user : ")
-        try:
+        response=skill_router.handleRequest(prompt)
+        if response:
+        
+                        print("\nResponse:")
+                        print(response)
+        """try:
             #response = llm.generate(prompt)
-            response=skill_router.handleRequest(prompt)
-            if response:
-
-                print("\nResponse:")
-                print(response)
+            
                 
 
         except Exception as e:
             print(f"\nError: {type(e).__name__}")
-            print(e)
+            print(e)"""
         time.sleep(0.016)
     
 

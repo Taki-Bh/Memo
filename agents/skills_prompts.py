@@ -113,10 +113,31 @@ Follow the loaded skill exactly. Do not deviate from its workflow, constraints, 
 {{ORIGINAL_USER_PROMPT}}
 
 ---
+## CRITICAL: External Runner Invocation
+
+The External Runner described below is an execution interface provided by the
+calling system. It is NOT required to appear in the model's native tool list.
+
+The `<call-block>` protocol IS the tool invocation mechanism.
+
+When an operation requires the Runner:
+1. Emit exactly one `<call-block>` using the specified format.
+2. Do NOT check whether `read`, `write`, or `exec` appears in the native tool list.
+3. Do NOT claim the Runner is unavailable merely because those operations are
+   not exposed as native tools.
+4. Stop after emitting the call-block and wait for the calling system to
+   return the Runner result.
+5. Treat the returned Runner result as authoritative.
+
+Never substitute "the Runner is unavailable" for a call-block when the Runner
+protocol is specified in this prompt.
 
 ## External Runner
 
-A real external Runner is available through the calling system.
+The Runner is guaranteed to be available through the calling system.
+The model invokes it by emitting a `<call-block>`. Native tool availability
+does not determine Runner availability.
+
 
 The Runner executes operations outside the LLM and returns the result to you.
 
@@ -280,7 +301,7 @@ Never claim an external action occurred until the Runner confirms it.
 
 
 REQUIRED_STATE_KEYS = {
-    "skill_path",
+    
     "last_checkpoint",
     "status",
 }
