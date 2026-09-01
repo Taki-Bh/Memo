@@ -72,13 +72,14 @@ class SkillExecutionLoop:
             print(f"Tool to call {tool_call}")
             if tool_call:
                 result = self._execute_tool(tool_call)
-
+                print(f"Tool result: {result}")
                 # Feed the tool result back into the next LLM iteration.
                 current_state = self._update_prompt_state(
                     current_state,
                     tool_call,
                     result,
                 )
+                print(f"Current State Result: {current_state}")
 
                 
 
@@ -89,6 +90,10 @@ class SkillExecutionLoop:
             print(new_state)
             if not new_state:
                     resp=self.provider.generate("You forgot the state block")
+                    if current_state and "last_tool_result" in current_state:
+                        resp=self.provider.generate(f"You forgot the state block, The last tool result was {current_state['last_tool_result']}")
+                    else:
+                        resp=self.provider.generate("You forgot the state block")
                     new_state ,_= extract_skill_state(resp)
             print(new_state)
             if new_state:

@@ -53,7 +53,7 @@ class SkillRouterAgent(Agent):
         raw = self.provider.generate(router_prompt)
 
         try:
-            response = json.loads(raw)
+            response = json.loads(raw[:raw.rfind("}") + 1])
         except json.JSONDecodeError:
             return f"Router returned invalid JSON: {raw!r}"
 
