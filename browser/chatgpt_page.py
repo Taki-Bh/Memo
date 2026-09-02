@@ -31,7 +31,7 @@ class ChatGPTPage(LLMPage):
                 t=0
                 while True:
                      
-                   
+                    
                     #print("Assistant messages:", assistant_msgs.count())
                     #print(f"msg = {msg} | old_msg={old_msg}")
                     #if conversation_box.count():
@@ -40,6 +40,9 @@ class ChatGPTPage(LLMPage):
                         msg=assistant_msgs.last.text_content()
                     if msg.find(':'):
                         msg=msg[msg.find(':')+1:]
+                        if msg.lower().find("searching the web")!=-1:
+                             time.sleep(1)
+                             continue
                         if msg==old_msg:
                             idle_counter+=1
                         else:

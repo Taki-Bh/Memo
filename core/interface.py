@@ -10,7 +10,7 @@ def init_interface():
     # Automatically:
     # - uses API if OPENAI_API_KEY exists
     # - uses browser if it doesn't
-    llm = GeminiProvider(context)
+    llm = ChatGPTProvider(context)
 
     print(f"Using provider: {llm.mode}")
 

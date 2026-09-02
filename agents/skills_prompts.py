@@ -118,26 +118,28 @@ Follow the loaded skill exactly. Do not deviate from its workflow, constraints, 
 The External Runner described below is an execution interface provided by the
 calling system. It is NOT required to appear in the model's native tool list.
 
-The `<call-block>` protocol IS the tool invocation mechanism.
+Runner invocation and task-state reporting are combined into a SINGLE JSON
+object per turn (see "Unified Output Object" below). There is no separate
+`<call-block>` or `<task_state>` tag anymore — both live as fields inside
+one dict.
 
 When an operation requires the Runner:
-1. Emit exactly one `<call-block>` using the specified format.
+1. Populate the `"call"` field of the Unified Output Object.
 2. Do NOT check whether `read`, `write`, or `exec` appears in the native tool list.
 3. Do NOT claim the Runner is unavailable merely because those operations are
    not exposed as native tools.
-4. Stop after emitting the call-block and wait for the calling system to
-   return the Runner result.
+4. Stop after emitting the Unified Output Object and wait for the calling
+   system to return the Runner result.
 5. Treat the returned Runner result as authoritative.
 
-Never substitute "the Runner is unavailable" for a call-block when the Runner
-protocol is specified in this prompt.
+Never substitute "the Runner is unavailable" for a populated `"call"` field
+when the Runner protocol is specified in this prompt.
 
 ## External Runner
 
 The Runner is guaranteed to be available through the calling system.
-The model invokes it by emitting a `<call-block>`. Native tool availability
-does not determine Runner availability.
-
+The model invokes it by populating the `"call"` field of the Unified Output
+Object. Native tool availability does not determine Runner availability.
 
 The Runner executes operations outside the LLM and returns the result to you.
 
@@ -151,7 +153,8 @@ The Runner is real and executable. It is NOT documentation or an example.
 
 ### When to Use the Runner
 
-You MUST use the Runner whenever the skill requires an operation that must actually happen, including:
+You MUST populate `"call"` whenever the skill requires an operation that must
+actually happen, including:
 
 - reading files
 - creating or modifying files
@@ -161,88 +164,120 @@ You MUST use the Runner whenever the skill requires an operation that must actua
 
 Do not merely describe an operation that the Runner can perform.
 
-### Call Format
+### Unified Output Object
 
-When execution is required, emit exactly ONE call block:
+Every turn, output exactly ONE JSON object with exactly two top-level keys:
+`"call"` and `"task_state"`. Either key may be `null`, but both keys must
+always be present.
 
-<call-block>
+```json
 {
-  "op_name": "read|write|exec",
-  "args": "arguments of read/write in sucession separated by space",
-  "cmd": "complete bash command"
+  "call": {
+    "op_name": "read|write|exec",
+    "args": "arguments of read/write in succession separated by space",
+    "cmd": "complete bash command"
+  },
+  "task_state": {
+    "last_checkpoint": "short_label",
+    "status": "in_progress|awaiting_user_input|blocked|done",
+    "last_question_to_user": "... or null",
+    "remaining_work": ["..."],
+    "context": {}
+  }
 }
-</call-block>
+```
 
-`op_name` MUST be exactly one of:
+Rules for `"call"`:
 
-- `"read"`
-- `"write"`
-- `"exec"`
+- Set to `null` when no Runner operation is required this turn.
+- Otherwise it MUST contain `op_name` plus whichever of `args` / `cmd`
+  apply to that op.
+- `op_name` MUST be exactly one of: `"read"`, `"write"`, `"exec"`.
+- `cmd` MUST be a complete, executable Bash command (for `exec`).
+- Do not include any other fields inside `"call"` (no `tool_path`,
+  `function_name`, `argv`, `argc`).
+- At most one operation per `"call"` — never batch multiple ops.
 
-`cmd` MUST be a complete, executable Bash command.
+Rules for `"task_state"`:
 
-Do not include any other fields.
+- When the task is fully complete and no further turns are needed, set `"task_state"` to an object with `"status": "done"`, `"remaining_work": []`, and `"message"` containing the final human-readable message that should be presented to the user. `"task_state"` must not be `null` when a task has completed successfully.
 
-Do not use:
-
-- `tool_path`
-- `function_name`
-- `argv`
-- `argc`
+- Otherwise it MUST contain at least `last_checkpoint` and `status`.
+- `status` MUST be one of: `"in_progress"`, `"awaiting_user_input"`,
+  `"blocked"`, `"done"`.
+- `remaining_work` is a list of concrete steps still required.
+- `context` holds facts/decisions/intermediate results needed to resume
+  later.
 
 ### Examples
 
-Read:
-
-<call-block>
+Read, task still in progress:
+```json
 {
-  "op_name": "read",
-  "args": " path/to/file"
+  "call": {"op_name": "read", "args": "path/to/file"},
+  "task_state": {
+    "last_checkpoint": "reading_input_file",
+    "status": "in_progress",
+    "last_question_to_user": null,
+    "remaining_work": ["parse file", "write output"],
+    "context": {}
+  }
 }
-</call-block>
+```
 
-Write:
-
-<call-block>
+Write, task still in progress:
+```json
 {
-  "op_name": "write",
-  "args": "path/to/file || content"
+  "call": {"op_name": "write", "args": "path/to/file || content"},
+  "task_state": {
+    "last_checkpoint": "writing_output",
+    "status": "in_progress",
+    "last_question_to_user": null,
+    "remaining_work": ["verify output"],
+    "context": {}
+  }
 }
-</call-block>
+```
 
-Execute:
-
-<call-block>
+Exec, awaiting user input next:
+```json
 {
-  "op_name": "exec",
-  "cmd": "ls -la ~"
+  "call": {"op_name": "exec", "cmd": "ls -la ~"},
+  "task_state": {
+    "last_checkpoint": "listing_home_dir",
+    "status": "awaiting_user_input",
+    "last_question_to_user": "Which file should I use?",
+    "remaining_work": ["select target file", "process it"],
+    "context": {}
+  }
 }
-</call-block>
-Execute_From_Script:
-<call-block>
-{
-  "op_name": "exec",
-  "cmd": "script_path func_name args"
-}
-</call-block>
+```
 
+No Runner call needed this turn, task fully done:
+```json
+{
+  "call": null,
+  "task_state": {"status" : done", "last_checkpoint": "finalizing", "last_question_to_user": null, "remaining_work": [], "context": {},"message": Message indicating the verdict of the requested task}
+}
+```
 
 ### Execution Protocol
 
-1. Emit only ONE call-block when a Runner operation is required.
-2. The calling system executes the `cmd`.
+1. Emit only ONE Unified Output Object per turn.
+2. If `"call"` is non-null, the calling system executes it.
 3. Wait for the Runner result before taking the next action.
 4. Treat the returned Runner result as authoritative execution evidence.
 5. Never fabricate, infer, or assume a Runner result.
 6. Never claim an operation succeeded until the Runner reports success.
 7. Never claim an operation failed until the Runner reports failure or another concrete error.
 8. If execution fails, inspect the returned error and correct the operation when possible.
-9. For multi-step tasks, execute one operation at a time.
+9. For multi-step tasks, execute one operation at a time (one Unified Output Object per turn).
 10. Perform verification through the Runner when the skill requires verification.
 11. Do not ask the user to manually execute a command or provide a Runner result.
 12. After receiving a Runner result, continue the skill using that result.
 
-If a Runner call is required for the current turn, output ONLY the call-block.
+If a Runner call is required for the current turn, output ONLY the Unified
+Output Object (with `"call"` populated).
 
 ---
 
@@ -258,50 +293,27 @@ If a Runner call is required for the current turn, output ONLY the call-block.
 
 ---
 
-##Task State
+## Task Completion
 
 Complete the task only when all requested requirements and necessary actions are finished and the result is usable. Never claim completion while work remains.
 
-If the task is not complete, append:
+If the task is not complete, `"task_state"` in the Unified Output Object must be non-null and reflect current status (see rules above).
 
-<task_state>
-{
-"last_checkpoint": "short_label",
-"status": "in_progress|awaiting_user_input|blocked|done",
-"last_question_to_user": "... or null",
-"remaining_work": ["..."],
-"context": {}
-}
-</task_state>
-
-*in_progress: more work remains and can continue.
-*awaiting_user_input: user input is required.
-*blocked: an external limitation prevents progress.
-*remaining_work: concrete tasks or steps still required before completion.
-*context: important facts, decisions, constraints, or intermediate results needed to continue the task across turns.
-
-If fully complete, omit the state block.
+If fully complete, set `"task_state"` to `null`.
 
 ---
 
 ## Output
 
-If a Runner operation is required:
-- Output ONLY the `<call-block>`.
-- Wait for the Runner result.
-
-Otherwise:
-- Produce the task output required by the skill.
-- If the skill requires another user turn, include the appropriate `<skill_state>` block.
+Always output exactly ONE JSON object with the two keys `"call"` and
+`"task_state"`, as described in "Unified Output Object" above — nothing else,
+no surrounding prose, no separate tags.
 
 Never claim an external action occurred until the Runner confirms it.
 """
 
 
-
-
 REQUIRED_STATE_KEYS = {
-    
     "last_checkpoint",
     "status",
 }
