@@ -6,6 +6,67 @@ from agents.skill_store import *
 from core.runner import Runner
 
 
+# Fields the model tends to fill with raw, unescaped text (shell commands,
+# file contents, free-form questions) that can contain stray double quotes
+# or backslashes and break strict JSON parsing.
+_FREE_TEXT_FIELDS = ("cmd", "args", "last_question_to_user")
+
+
+def _repair_free_text_field(text: str, field_name: str) -> str:
+    """
+    Best-effort repair for a single JSON string field whose value contains
+    unescaped `"` or `\\` characters (e.g. a shell command like
+    `find "$HOME" -iname 'x'`). Finds the field's value between its opening
+    quote and the next plausible structural boundary (another key, or the
+    end of the enclosing object(s)), then escapes it in place.
+
+    Non-greedy matching means this looks for the *first* boundary after the
+    opening quote, so it only fires when the raw value doesn't happen to
+    contain that exact boundary sequence itself.
+    """
+    pattern = re.compile(
+        r'("' + re.escape(field_name) + r'"\s*:\s*")(.*?)("\s*'
+        r'(?:,\s*"[a-zA-Z_]+"\s*:|\}\s*,\s*"[a-zA-Z_]+"\s*:|\}\s*\}))',
+        re.DOTALL,
+    )
+
+    def _escape(m):
+        prefix, value, suffix = m.group(1), m.group(2), m.group(3)
+        fixed = value.replace("\\", "\\\\").replace('"', '\\"')
+        return prefix + fixed + suffix
+
+    new_text, count = pattern.subn(_escape, text, count=1)
+    return new_text if count else text
+
+
+def _lenient_json_loads(text: str):
+    """
+    Try a strict json.loads first; if that fails, progressively repair the
+    known free-text fields (which are the fields most likely to contain
+    raw quotes/backslashes from shell commands or file content) and retry.
+    """
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    repaired = text
+    for field in _FREE_TEXT_FIELDS:
+        candidate = _repair_free_text_field(repaired, field)
+        if candidate == repaired:
+            continue
+        repaired = candidate
+        try:
+            return json.loads(repaired)
+        except json.JSONDecodeError:
+            continue
+
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        return None
+
+
 def extract_unified_output(response: str):
     """
     Parse the Unified Output Object out of an executor response:
@@ -22,6 +83,8 @@ def extract_unified_output(response: str):
       REQUIRED_STATE_KEYS and a valid VALID_STATUSES status.
     - `cleaned_response_text` is whatever text (if any) surrounded the JSON
       object, with the JSON blob itself stripped out.
+    - Falls back to `_lenient_json_loads` when the object contains raw,
+      unescaped quotes/backslashes (common with shell commands in "cmd").
     """
     if not isinstance(response, str):
         return None, None, response
@@ -32,18 +95,16 @@ def extract_unified_output(response: str):
     json_span = None
 
     # Expected case: the whole response IS the JSON object.
-    try:
-        data = json.loads(stripped)
+    data = _lenient_json_loads(stripped)
+    if data is not None:
         json_span = (0, len(stripped))
-    except json.JSONDecodeError:
+    else:
         # Fallback: locate a JSON object embedded in surrounding text.
         match = re.search(r"\{.*\}", stripped, re.DOTALL)
         if match:
-            try:
-                data = json.loads(match.group(0))
+            data = _lenient_json_loads(match.group(0))
+            if data is not None:
                 json_span = match.span()
-            except json.JSONDecodeError:
-                data = None
 
     if json_span:
         cleaned = (stripped[:json_span[0]] + stripped[json_span[1]:]).strip()
