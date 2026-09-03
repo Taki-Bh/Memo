@@ -1,5 +1,5 @@
 """
-Aurora — AI Assistant desktop UI
+Memo — AI Assistant desktop UI
 =================================
 
 Entry point. Loads ui/main_window.ui (a QMainWindow with a QSplitter
@@ -18,8 +18,10 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
 from ui.widgets.chat_view import ChatView
+from ui.widgets.preferences_dialog import PreferencesDialog
 from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
+from ui.widgets import theme_manager
 
 from core.interface import get_response
 
@@ -124,8 +126,17 @@ class MemoApp:
         self.sidebar.select_conversation("")
 
     def _on_utility_activated(self, name: str):
-        # Hook up real Settings/Theme/Files/Tools/Help panels here.
+        if name == "preferences":
+            self._open_preferences()
+            return
+        # Hook up real Settings/Files/Tools/Help panels here.
         print(f"[utility] {name} clicked")
+
+    def _open_preferences(self):
+        # Purely client-side: no backend/model call involved anywhere
+        # in this dialog, it only reads/writes local app settings.
+        dialog = PreferencesDialog(self.window)
+        dialog.exec()
 
     # ------------------------------------------------------------------
     # Chat interactions
@@ -151,9 +162,10 @@ class MemoApp:
 
 
 def load_stylesheet(app: QApplication):
-    qss_path = STYLES_DIR / "theme.qss"
-    if qss_path.exists():
-        app.setStyleSheet(qss_path.read_text(encoding="utf-8"))
+    # Loads whichever theme the user picked last time (local settings
+    # only — see widgets/theme_manager.py), defaulting to Dark.
+    saved_theme = theme_manager.get_saved_theme()
+    app.setStyleSheet(theme_manager.load_theme_qss(saved_theme))
 
 
 def main():

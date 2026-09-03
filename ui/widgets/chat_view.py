@@ -52,7 +52,7 @@ class ChatView(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)
 
-        self.ui.modelSelectorCombo.addItems(["Aurora — Balanced", "Aurora — Fast", "Aurora — Precise"])
+        self.ui.modelSelectorCombo.addItems(["Memo — Balanced", "Memo — Fast", "Memo — Precise"])
 
         # Embed the composer into its placeholder container.
         composer_layout = QVBoxLayout(self.ui.composerContainer)

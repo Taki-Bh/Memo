@@ -27,7 +27,7 @@ class Sidebar(QWidget):
     conversationRenamed = Signal(str)
     conversationDeleted = Signal(str)
     conversationArchived = Signal(str)
-    utilityActivated = Signal(str)  # "settings" | "theme" | "attachments" | "tools" | "help"
+    utilityActivated = Signal(str)  # "settings" | "preferences" | "attachments" | "tools" | "help"
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,7 +47,7 @@ class Sidebar(QWidget):
         self.ui.conversationSearch.textChanged.connect(self._filter_conversations)
 
         self.ui.settingsButton.clicked.connect(lambda: self.utilityActivated.emit("settings"))
-        self.ui.themeButton.clicked.connect(lambda: self.utilityActivated.emit("theme"))
+        self.ui.preferencesButton.clicked.connect(lambda: self.utilityActivated.emit("preferences"))
         self.ui.attachmentsButton.clicked.connect(lambda: self.utilityActivated.emit("attachments"))
         self.ui.toolsUtilityButton.clicked.connect(lambda: self.utilityActivated.emit("tools"))
         self.ui.helpButton.clicked.connect(lambda: self.utilityActivated.emit("help"))

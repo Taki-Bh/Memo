@@ -2,6 +2,7 @@ import threading
 from core.streaming import *
 from browser.llm_page import *
 from browser.gemini_parser import GeminiStreamParser
+from core.config import *
 import re
 def _parse_worker(body_bytes: bytes, response_queue: queue.Queue):
     """
@@ -24,6 +25,19 @@ class GeminiPage(LLMPage):
     # Updated selectors based on your UI breakdown
     PROMPT_SELECTOR = '.ql-editor'
     SUBMIT_SELECTOR = 'gem-icon-button.send-button'
+    def __init__(self):
+                self.browser = Browser()
+                self.browser.start(headless=False)
+        
+                # Thread-safe queue to pass results safely from worker thread to main thread
+                self.response_queue = queue.Queue()
+        
+                # ✅ Register listener BEFORE opening the page
+                if not USE_WEB_SCRAPING:
+                    self.page.on("response", self.handle_response)
+                else:
+                    print("USING WEB SCRAPING")
+                self._open()
     def send_message(self, prompt):
 
         res=super().send_message(prompt)
@@ -63,7 +77,55 @@ class GeminiPage(LLMPage):
                 pass
             except Exception as err:
                 print(f"[Stream Intercept Error]: {err}")
+    def get_latest_response(self, timeout_ms: int = 60000, await_response : bool = True) -> str:
+                
+                if not USE_WEB_SCRAPING:
+                    return self.__super__(timeout_ms,await_response)
+                else:
+                    assistant_msgs = self.page.locator("response-container")
+                    conversation_box=self.page.locator("ol[aria-label='Conversation']")
+                    old_msg=""
+                    msg=""
+                    idle_counter=0
+                    t=0
+                    while True:
+                        
+                        
+                        print("Assistant messages:", assistant_msgs.count())
+                        if assistant_msgs:
+                             print("Assistant message:", assistant_msgs.last.text_content())
+                             
+                        #print(f"msg = {msg} | old_msg={old_msg}")
+                        #if conversation_box.count():
+                            #print("Yes COnversation box exists")
+                        if assistant_msgs.count():
+                            msg=assistant_msgs.last.text_content()
+                    
+                        if msg.find('said') > -1:
 
+                            print(f"Parsed message:{msg[msg.find('said')+5:]}")
+                            
+                            msg=msg[msg.find('said')+5:]
+                            if msg.lower().find("searching the web")!=-1:
+                                time.sleep(1)
+                                continue
+                            if msg==old_msg:
+                                idle_counter+=1
+                            else:
+                                old_msg=msg
+                                idle_counter=0
+                            if idle_counter>MSG_TIMEOUT*60 and msg=="" :
+                                return None
+                            if msg !="" and idle_counter>MSG_CHECK_DUR*60:
+                                #print(f"Assistant said: {msg}")
+                                #input()
+                                return msg                            
+
+
+
+                        time.sleep(0.016)
+                        t+=0.016
+                        #print(f"elapsed time={t}")
 
 
 

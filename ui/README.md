@@ -1,4 +1,4 @@
-# Aurora — AI Assistant Desktop UI
+# Memo — AI Assistant Desktop UI
 
 A production-structured PySide6 desktop shell for an AI assistant: glass +
 neumorphic dark theme, a 20/80 sidebar/conversation split, a genuinely
@@ -24,9 +24,13 @@ ai_assistant_ui/
 │   ├── typing_indicator.py         # TypingIndicator — animated "Thinking..." row
 │   ├── sidebar.py                  # Sidebar — loads sidebar.ui, owns conversation list logic
 │   ├── chat_view.py                # ChatView — loads chat_view.ui, owns message list + empty state
-│   └── composer.py                 # Composer — loads composer.ui, owns send/char-count logic
+│   ├── composer.py                 # Composer — loads composer.ui, owns send/char-count logic
+│   ├── theme_manager.py            # theme registry + apply/persist (local QSettings, no backend)
+│   └── preferences_dialog.py       # Preferences dialog — colour theme picker
 └── styles/
-    └── theme.qss                   # single centralized stylesheet — colors, glass, neumorphism
+    ├── theme_dark.qss              # default theme
+    ├── theme_light.qss             # white theme
+    └── theme_light_blue.qss        # light blue theme
 ```
 
 ## 1. Architecture, in one paragraph
@@ -103,7 +107,7 @@ Two things control this:
    SIDEBAR_RATIO = 0.20
    CHAT_RATIO = 0.80
    ```
-   `AuroraApp._apply_split_ratio()` calls `rootSplitter.setSizes([...])`
+   `MemoApp._apply_split_ratio()` calls `rootSplitter.setSizes([...])`
    using these on startup. Change the numbers, done.
 
 2. **Design-time starting point / bounds** — `ui/main_window.ui`, on
@@ -118,10 +122,34 @@ launch, connect `QSplitter.splitterMoved` (already wired to a no-op in
 `main.py`) to save the user's chosen sizes, or call `_apply_split_ratio()`
 from a `resizeEvent` override on the main window.
 
-## 5. Changing colors, spacing, shadows, and the glass effect
+## 5. Preferences — colour theme
 
-Everything visual lives in **`styles/theme.qss`** — one file, loaded once
-in `main.py` via `app.setStyleSheet(...)`. It's organized into clearly
+The sidebar's **🎨 Preferences** button (`preferencesButton` in
+`sidebar.ui`) opens `widgets/preferences_dialog.py`'s `PreferencesDialog`,
+which currently holds one section: an Appearance / colour-theme picker
+with three options — **Dark**, **Light (White)**, and **Light Blue**.
+Picking one applies it to the whole app instantly (`app.setStyleSheet(...)`)
+and remembers the choice locally via `QSettings` (`widgets/theme_manager.py`),
+so it's restored automatically on the next launch.
+
+This whole feature is deliberately **backend-independent** — it never
+imports `core.interface` or makes any network/model call, only reading
+and writing a small local settings file. It's a template for any other
+purely-client-side preference you add later (font size, message density,
+keyboard shortcuts, etc.): add the option to `PreferencesDialog`, and if
+it needs persistence, add a key to `theme_manager.py` (or a sibling
+`settings_manager.py` for non-appearance prefs).
+
+To add a fourth theme: drop a new `styles/theme_<name>.qss` file (copy
+an existing one and retint it), then add an entry to the `THEMES` dict
+in `widgets/theme_manager.py` with its label, filename, and a 3-color
+swatch — it'll show up in the Preferences dialog automatically.
+
+## 6. Changing colors, spacing, shadows, and the glass effect
+
+Everything visual for a given theme lives in its
+**`styles/theme_<name>.qss`** file (`theme_dark.qss` is loaded by
+default). Each is organized into clearly
 commented sections (Sidebar / Chat view / Composer) and every rule targets
 either an `objectName` (`#conversationItem`, `#composerCard`, ...) or a
 dynamic property (`[role="user"]`, `[selected="true"]`, `[active="true"]`).
@@ -153,7 +181,7 @@ dynamic property (`[role="user"]`, `[selected="true"]`, `[active="true"]`).
   `setDuration(...)` calls near the top of their `__init__` — tune those
   directly for snappier/slower motion.
 
-## 6. How the auto-expanding composer works
+## 7. How the auto-expanding composer works
 
 `widgets/auto_resize_text_edit.py`'s `AutoResizeTextEdit` is a
 `QPlainTextEdit` that:
@@ -183,7 +211,7 @@ dynamic property (`[role="user"]`, `[selected="true"]`, `[active="true"]`).
 `__init__` — the two numbers to change if you want a taller or shorter
 composer.
 
-## 7. Notes on Markdown / code rendering
+## 8. Notes on Markdown / code rendering
 
 AI messages render through `QTextBrowser.setMarkdown(...)` (`widgets/chat_message.py`),
 which is Qt's own built-in CommonMark-ish renderer (Qt 5.14+/Qt6) —
@@ -195,7 +223,7 @@ clean extension point is a `QSyntaxHighlighter` subclass attached to
 `ChatMessage.body.document()` — Qt's own "Code Editor" example is a good
 reference implementation to adapt.
 
-## 8. Dependencies
+## 9. Dependencies
 
 Just `PySide6`. No Markdown-parsing library, no icon-font package (icons
 are Unicode glyphs styled through QSS, e.g. `✦`, `📎`, `⚙` — swap these for

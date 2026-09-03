@@ -167,7 +167,8 @@ class SkillExecutionLoop:
         )
 
         raw_response = self.provider.generate(prompt)
-
+        print("=== INITIAL RAW RESPONSE ===")
+        print(raw_response)
         for iteration in range(self.max_iterations):
 
             call, task_state, cleaned_response = extract_unified_output(raw_response)

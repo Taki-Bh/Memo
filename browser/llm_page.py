@@ -84,7 +84,7 @@ class LLMPage:
 
     def _open(self):
         try:
-            self.browser.goto(self.URL, timeout=30000)
+            self.browser.goto(self.URL, timeout=60000)
         except Exception as err:
             raise RuntimeError(f"Failed to connect to {self.URL}: {err}")
 
