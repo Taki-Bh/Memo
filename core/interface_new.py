@@ -67,11 +67,11 @@ class Assistant:
         command, prompt = CommandParser.parse(user_text)
 
         if command == CommandParser.AGENT_COMMAND:
-            self._send_to_agent(
+            resp=self._send_to_agent(
                 prompt,
                 await_response=await_response
             )
-            return ""
+            return resp
 
         return self._send_to_llm(
             prompt,

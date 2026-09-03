@@ -96,7 +96,8 @@ class SkillRouterAgent(Agent):
             # ---------------------------------------------------------
             # Persist execution state
             # ---------------------------------------------------------
-
+            print("********-************************************")
+            print(f"Execution result: {result}")
             new_state = result.get("state")
 
             if result["status"] == "done":
@@ -111,43 +112,18 @@ class SkillRouterAgent(Agent):
             # ---------------------------------------------------------
             # Skill creator special handling
             # ---------------------------------------------------------
-
-            cleaned_response = result["response"]
-
-            if skill.get("name") == "skill-creator":
+            exec_state=result.get("state")
+            print(f"Execution state: {exec_state}")
+            cleaned_response = exec_state.get('message').strip()
+            print(f"Cleaned response: {cleaned_response}")
+            """if skill.get("name") == "skill-creator":
                 return self._save_created_skill(
                     cleaned_response
-                )
+                )"""
 
             return cleaned_response
 
-        # -------------------------------------------------------------
-        # Draft a new skill
-        # -------------------------------------------------------------
-
-        if action == "draft_new_skill":
-
-            creator = fetch_skill(
-                "skills/skill-creator/SKILL.md"
-            )
-
-            draft_prompt = (
-                DRAFT_PROMPT
-                .replace(
-                    "{{SKILL_CREATOR_MD_CONTENT}}",
-                    creator.get("body", ""),
-                )
-                .replace(
-                    "{{ORIGINAL_USER_PROMPT}}",
-                    prompt,
-                )
-                .replace(
-                    "{{SUGGESTED_NAME}}",
-                    response.get("suggested_name", ""),
-                )
-            )
-
-            return self.provider.generate(draft_prompt)
+       
 
         return f"Unknown router action: {action!r}"
 
