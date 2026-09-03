@@ -24,6 +24,7 @@ from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
 
 from core.interface import get_response
+from core.interface_new import GUIInterface
 
 ROOT_DIR = Path(__file__).resolve().parent
 UI_DIR = ROOT_DIR / "ui"
@@ -53,7 +54,8 @@ class MockAssistant:
     """Stand-in for a real model/API call — replace freely."""
     
     def reply_to(self, user_text: str,await_response=True) -> str:
-        response=get_response(user_text,await_response=await_response)
+        #response=get_response(user_text,await_response=await_response)
+        response=GUIInterface().run(user_text)
         """return (
             f"Here's a thought on **\"{user_text[:60]}\"**:\n\n"
             "This is a demo reply rendered through Qt's built-in Markdown "

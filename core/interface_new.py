@@ -4,6 +4,7 @@ from core.context import LLMContext
 from providers.chatgpt.chatgpt import ChatGPTProvider
 from providers.gemini.gemini import GeminiProvider
 from agents.skill_router import SkillRouterAgent
+from logging import warn
 
 
 class CommandParser:
@@ -141,12 +142,51 @@ class TerminalInterface:
                 print(e)
 
             time.sleep(0.016)
+class GUIInterface:
+    """Placeholder for a future GUI interface implementation."""
+
+    def __init__(self, assistant: Assistant = None):
+        self.assistant = assistant or Assistant()
+
+    def run(self,prompt):
+        print("GUI interface handling")  
+        print("AI Assistant")
+        print(f"Provider: {self.assistant.llm.mode}")
+        print()
+        print("Commands:")
+        print("  /agent <prompt>  → send request to agent router")
+        print("  /quit             → exit")
+        print()
+       
+        prompt = prompt.strip()
+
+        if not prompt:
+                    warn("No prompt provided.")
+                    return "No prompt provided."
+
+        if prompt == "/quit":
+                    print("Goodbye!")
+                    return "Goodbye!"
+                    
+
+        response = self.assistant.send(prompt)
+
+        if response:
+                    print("\nResponse:")
+                    print(response)
+                    print()
+        return response
 
 
-def start_interface():
+def start_interface(on_terminal=True):
     assistant = Assistant()
     terminal = TerminalInterface(assistant)
-    terminal.run()
+    if on_terminal:
+        terminal.run()
+    else:
+        print("GUI interface handling.")
+
+
 
 
 if __name__ == "__main__":

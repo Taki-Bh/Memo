@@ -1,0 +1,416 @@
+/* =========================================================================
+   Memo — AI Assistant theme (Light / White)
+   -------------------------------------------------------------------------
+   Same selectors as theme_dark.qss, retinted for a clean white surface.
+
+   Palette:
+     Background      #FFFFFF
+     Surface         #F4F6F9
+     Glass           rgba(0,0,0,0.035)
+     Border          rgba(0,0,0,0.09)
+     Primary Text    #1A1D23
+     Secondary Text  #667085
+     Accent          #2B8CE6
+     Accent 2        #7A6FE0
+   ========================================================================= */
+
+* {
+    font-family: "Segoe UI", "Inter", "SF Pro Text", sans-serif;
+    outline: none;
+}
+
+QMainWindow, #centralwidget {
+    background-color: #FFFFFF;
+}
+
+QWidget {
+    color: #1A1D23;
+    background-color: transparent;
+}
+
+QToolTip {
+    background-color: #FFFFFF;
+    color: #1A1D23;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 4px 0 4px 0;
+}
+QScrollBar::handle:vertical {
+    background: rgba(0,0,0,0.14);
+    min-height: 24px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background: rgba(0,0,0,0.24);
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar:horizontal { height: 0px; }
+
+QSplitter::handle {
+    background-color: rgba(0,0,0,0.07);
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar
+   --------------------------------------------------------------------- */
+#Sidebar {
+    background-color: rgba(244, 246, 249, 0.95);
+    border-right: 1px solid rgba(0,0,0,0.08);
+}
+
+#brandGlyph {
+    color: #2B8CE6;
+    font-size: 18px;
+}
+#brandLabel {
+    color: #1A1D23;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+#newConversationButton {
+    background-color: rgba(43, 140, 230, 0.10);
+    border: 1px solid rgba(43, 140, 230, 0.35);
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-weight: 600;
+    text-align: left;
+    color: #14507A;
+}
+#newConversationButton:hover {
+    background-color: rgba(43, 140, 230, 0.18);
+    border: 1px solid rgba(43, 140, 230, 0.55);
+}
+#newConversationButton:pressed {
+    background-color: rgba(43, 140, 230, 0.26);
+}
+
+#conversationSearch {
+    background-color: rgba(0,0,0,0.035);
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 10px;
+    padding: 6px 10px;
+    color: #1A1D23;
+    selection-background-color: #2B8CE6;
+}
+#conversationSearch:focus {
+    border: 1px solid rgba(43, 140, 230, 0.55);
+    background-color: rgba(0,0,0,0.05);
+}
+
+#conversationGroupLabel {
+    color: #98A2B3;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 10px 6px 4px 6px;
+}
+
+#conversationItem {
+    border-radius: 10px;
+    background-color: transparent;
+}
+#conversationItem:hover {
+    background-color: rgba(0,0,0,0.045);
+}
+#conversationItem[selected="true"] {
+    background-color: rgba(43, 140, 230, 0.12);
+    border: 1px solid rgba(43, 140, 230, 0.30);
+}
+#conversationTitle {
+    color: #2A2F3A;
+    font-size: 13px;
+    background: transparent;
+}
+#conversationIcon {
+    font-size: 13px;
+    background: transparent;
+}
+
+#utilitiesSeparator, #headerSeparator {
+    background-color: rgba(0,0,0,0.09);
+    max-height: 1px;
+    border: none;
+}
+
+#settingsButton, #preferencesButton, #attachmentsButton,
+#toolsUtilityButton, #helpButton {
+    text-align: left;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #5B6472;
+    font-size: 13px;
+    border: 1px solid transparent;
+}
+#settingsButton:hover, #preferencesButton:hover, #attachmentsButton:hover,
+#toolsUtilityButton:hover, #helpButton:hover {
+    background-color: rgba(0,0,0,0.045);
+    color: #1A1D23;
+}
+
+#profileWidget {
+    border-top: 1px solid rgba(0,0,0,0.07);
+}
+#profileAvatar {
+    background-color: rgba(122, 111, 224, 0.16);
+    border-radius: 16px;
+    font-size: 14px;
+}
+#profileName {
+    color: #1A1D23;
+    font-size: 13px;
+    font-weight: 600;
+}
+#profilePlan {
+    color: #98A2B3;
+    font-size: 11px;
+}
+
+/* ---------------------------------------------------------------------
+   Chat view — header, message list, empty state
+   --------------------------------------------------------------------- */
+#ChatView {
+    background-color: #FFFFFF;
+}
+
+#headerWidget {
+    background-color: rgba(244, 246, 249, 0.80);
+}
+#assistantNameLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1A1D23;
+}
+#statusDot {
+    color: #22B573;
+    font-size: 9px;
+}
+#statusLabel {
+    color: #667085;
+    font-size: 12px;
+}
+#modelSelectorCombo {
+    background-color: rgba(0,0,0,0.035);
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 8px;
+    padding: 4px 10px;
+    color: #2A2F3A;
+    font-size: 12px;
+}
+#modelSelectorCombo::drop-down {
+    border: none;
+    width: 18px;
+}
+#conversationActionsButton {
+    background-color: transparent;
+    border-radius: 8px;
+    color: #667085;
+    font-size: 16px;
+}
+#conversationActionsButton:hover {
+    background-color: rgba(0,0,0,0.05);
+    color: #1A1D23;
+}
+
+#messageScrollArea, #messagesContainer {
+    background-color: transparent;
+}
+
+#emptyStateOrb {
+    font-size: 40px;
+    color: #7A6FE0;
+    qproperty-alignment: AlignCenter;
+}
+#emptyStateHeading {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1A1D23;
+    margin-top: 8px;
+    qproperty-alignment: AlignCenter;
+}
+#suggestionCard {
+    background-color: rgba(0,0,0,0.035);
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 12px;
+    padding: 10px 16px;
+    color: #3D4452;
+    font-size: 13px;
+}
+#suggestionCard:hover {
+    background-color: rgba(0,0,0,0.06);
+    border: 1px solid rgba(43, 140, 230, 0.35);
+    color: #1A1D23;
+}
+
+/* Message bubbles */
+#messageBubble[role="user"] {
+    background-color: rgba(43, 140, 230, 0.09);
+    border: 1px solid rgba(43, 140, 230, 0.18);
+    border-radius: 16px;
+}
+#messageBubble[role="ai"] {
+    background-color: #F4F6F9;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 16px;
+}
+#aiAvatar {
+    color: #7A6FE0;
+    font-size: 13px;
+}
+#messageAuthor {
+    color: #5B6472;
+    font-size: 12px;
+    font-weight: 600;
+}
+#messageTimestamp {
+    color: #98A2B3;
+    font-size: 11px;
+}
+#messageBody {
+    background: transparent;
+    border: none;
+    color: #22262E;
+    font-size: 13.5px;
+}
+#messageActionButton {
+    background-color: rgba(0,0,0,0.035);
+    border: 1px solid rgba(0,0,0,0.09);
+    border-radius: 6px;
+    padding: 3px 8px;
+    color: #667085;
+    font-size: 11px;
+}
+#messageActionButton:hover {
+    background-color: rgba(0,0,0,0.07);
+    color: #1A1D23;
+}
+
+#typingIndicator #typingText {
+    color: #98A2B3;
+    font-size: 12px;
+}
+#typingDot {
+    color: #98A2B3;
+    font-size: 16px;
+}
+#typingDot[active="true"] {
+    color: #2B8CE6;
+}
+
+/* ---------------------------------------------------------------------
+   Composer — floating capsule
+   --------------------------------------------------------------------- */
+#composerCard {
+    background-color: #F4F6F9;
+    border: 1px solid rgba(0,0,0,0.10);
+    border-radius: 20px;
+}
+#composerCard:focus-within {
+    border: 1px solid rgba(43, 140, 230, 0.45);
+}
+
+#messageInput {
+    background: transparent;
+    border: none;
+    color: #1A1D23;
+    font-size: 14px;
+    padding: 6px 4px;
+    selection-background-color: #2B8CE6;
+}
+
+#charCountLabel {
+    color: #98A2B3;
+    font-size: 10px;
+}
+
+#attachmentButton, #toolsButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 18px;
+    color: #667085;
+    font-size: 15px;
+}
+#attachmentButton:hover, #toolsButton:hover {
+    background-color: rgba(0,0,0,0.06);
+    color: #1A1D23;
+}
+
+#sendButton {
+    background-color: rgba(0,0,0,0.045);
+    border: none;
+    border-radius: 18px;
+    color: #98A2B3;
+    font-size: 15px;
+}
+#sendButton[active="true"] {
+    background-color: #2B8CE6;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+#sendButton[active="true"]:hover {
+    background-color: #4FA0EE;
+}
+#sendButton:disabled {
+    color: #C4CAD3;
+    background-color: rgba(0,0,0,0.025);
+}
+
+/* ---------------------------------------------------------------------
+   Preferences dialog
+   --------------------------------------------------------------------- */
+#PreferencesDialog {
+    background-color: #FFFFFF;
+}
+#preferencesTitle {
+    color: #1A1D23;
+    font-size: 16px;
+    font-weight: 700;
+}
+#preferencesSectionLabel {
+    color: #98A2B3;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+#themeOption {
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.09);
+    background-color: rgba(0,0,0,0.02);
+    padding: 10px 12px;
+    text-align: left;
+    color: #2A2F3A;
+}
+#themeOption:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+#themeOption[active="true"] {
+    border: 1px solid rgba(43, 140, 230, 0.55);
+    background-color: rgba(43, 140, 230, 0.10);
+    color: #14507A;
+    font-weight: 600;
+}
+#themeSwatch {
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.12);
+}
+#preferencesCloseButton {
+    background-color: rgba(0,0,0,0.05);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    color: #1A1D23;
+    font-weight: 600;
+}
+#preferencesCloseButton:hover {
+    background-color: rgba(0,0,0,0.09);
+}
