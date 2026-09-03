@@ -34,7 +34,7 @@ def write(path: str, content: str) -> str:
 
 
 def exec(command: str) -> str:
-    """Execute a shell command and return its output."""
+    """Execute a shell command and return its output (including errors)."""
     result = subprocess.run(
         command,
         shell=True,
@@ -44,14 +44,12 @@ def exec(command: str) -> str:
     )
 
     output = result.stdout
-
     if result.stderr:
         output += result.stderr
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Command failed with exit code {result.returncode}:\n{output}"
-        )
+        output += f"\n[Command failed with exit code {result.returncode}]"
+
     print(output)
     return output
 
