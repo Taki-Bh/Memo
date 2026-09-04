@@ -14,7 +14,7 @@ from it via signals.
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer,QObject
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
 from ui.widgets.chat_view import ChatView
@@ -23,9 +23,10 @@ from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
 
-from core.interface import get_response
-from core.interface_new import GUIInterface
+import asyncio
+from PySide6.QtCore import QThread, Signal, QObject
 
+from core.interface_new import GUIInterface
 ROOT_DIR = Path(__file__).resolve().parent
 UI_DIR = ROOT_DIR / "ui"
 STYLES_DIR = ROOT_DIR / "styles"
@@ -50,6 +51,24 @@ DEMO_CONVERSATIONS = [
 ]
 
 
+class LLMWorker(QObject):
+    finished = Signal(str)
+    error = Signal(str)
+    requestReady = Signal(str)   # main thread emits this to hand off a prompt
+
+    def __init__(self):
+        super().__init__()
+        self.interface = None
+        self.requestReady.connect(self._run)  # queued automatically once moved to another thread
+
+    def _run(self, prompt: str):
+        try:
+            if self.interface is None:
+                self.interface = GUIInterface()   # constructed on THIS thread, once
+            response = self.interface.run(prompt)
+            self.finished.emit(response)
+        except Exception as e:
+            self.error.emit(str(e))
 class MockAssistant:
     """Stand-in for a real model/API call — replace freely."""
     
@@ -72,7 +91,7 @@ class MockAssistant:
         return response
 
 
-class MemoApp:
+class MemoApp(QObject):
     def __init__(self):
         loader = CustomUiLoader({})
         self.window = loader.load_ui(UI_DIR / "main_window.ui")
@@ -89,7 +108,12 @@ class MemoApp:
 
         self.assistant = MockAssistant()
         self._active_conversation = None
-
+        self.thread = QThread()
+        self.worker = LLMWorker()
+        self.worker.moveToThread(self.thread)
+        self.worker.finished.connect(self.on_llm_response)
+        self.worker.error.connect(self.on_llm_error)
+        self.thread.start()  
         self._wire_signals()
         self._load_demo_data()
         self._apply_split_ratio()
@@ -144,15 +168,29 @@ class MemoApp:
     # Chat interactions
     # ------------------------------------------------------------------
     def _on_suggestion_activated(self, label: str):
+
         self.chat_view.composer.text_edit.setPlainText(label)
         self.chat_view.composer.text_edit.setFocus()
 
     def _on_message_sent(self, text: str):
+
         self.chat_view.add_user_message(text)
         self.chat_view.show_typing(True)
-        # Simulate network/model latency without blocking the UI thread.
-        QTimer.singleShot(900, lambda: self._deliver_reply(text))
+        self.worker.requestReady.emit(text)   # queued connection delivers this on the worker thread
+    def closeEvent(self, event):  # or wherever you tear the app down
+        self.thread.quit()
+        self.thread.wait()
 
+    def on_llm_response(self, response):
+
+        self.chat_view.show_typing(False)
+        self.chat_view.add_ai_message(response)
+        
+    def on_llm_error(self, error_message):
+
+        self.chat_view.show_typing(False)
+        self.chat_view.add_ai_message(f"Error: {error_message}")
+        
     def _deliver_reply(self, user_text: str):
         self.chat_view.show_typing(False)
         reply = self.assistant.reply_to(user_text)
