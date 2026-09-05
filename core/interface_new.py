@@ -46,7 +46,7 @@ class Assistant:
         self.context = LLMContext("", "", {}, [])
 
         # Provider automatically chooses its available mode.
-        self.llm = ChatGPTProvider(self.context)
+        self.llm = GeminiProvider(self.context)
 
         # Agent responsible for routing requests to skills/agents.
         self.agent_router = SkillRouterAgent(self.llm)

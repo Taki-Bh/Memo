@@ -174,7 +174,7 @@ always be present.
 {
   "call": {
     "op_name": "read|write|exec",
-    "args": "arguments of read/write in succession separated by space",
+    "args": "arguments of read/write in succession separated by space(respetively '||' for write)",
     "cmd": "complete bash command"
   },
   "task_state": {
