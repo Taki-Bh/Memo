@@ -48,6 +48,41 @@ THEMES = {
         "file": "theme_light_blue.qss",
         "swatch": [QColor("#EAF3FC"), QColor("#F4F9FE"), QColor("#2F87D6")],
     },
+    "midnight_purple": {
+        "label": "Midnight Purple",
+        "file": "theme_midnight_purple.qss",
+        "swatch": [QColor("#120B1E"), QColor("#1E1430"), QColor("#B388FF")],
+    },
+    "forest": {
+        "label": "Forest",
+        "file": "theme_forest.qss",
+        "swatch": [QColor("#0E1710"), QColor("#16241A"), QColor("#5FD68A")],
+    },
+    "solarized_dark": {
+        "label": "Solarized Dark",
+        "file": "theme_solarized_dark.qss",
+        "swatch": [QColor("#002B36"), QColor("#073642"), QColor("#B58900")],
+    },
+    "solarized_light": {
+        "label": "Solarized Light",
+        "file": "theme_solarized_light.qss",
+        "swatch": [QColor("#FDF6E3"), QColor("#EEE8D5"), QColor("#268BD2")],
+    },
+    "high_contrast": {
+        "label": "High Contrast",
+        "file": "theme_high_contrast.qss",
+        "swatch": [QColor("#000000"), QColor("#1A1A1A"), QColor("#FFD500")],
+    },
+    "rose_gold": {
+        "label": "Rose Gold",
+        "file": "theme_rose_gold.qss",
+        "swatch": [QColor("#2A1B1E"), QColor("#3A2529"), QColor("#F0A9A0")],
+    },
+    "amber_terminal": {
+        "label": "Amber Terminal",
+        "file": "theme_amber_terminal.qss",
+        "swatch": [QColor("#0C0A00"), QColor("#1A1400"), QColor("#FFB000")],
+    },
 }
 
 

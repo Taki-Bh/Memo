@@ -73,6 +73,7 @@ class LLMWorker(QObject):
         self.interface = None
         self._queue: "queue.Queue[str | None]" = queue.Queue()
         self._busy = threading.Event()
+        
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
 
@@ -88,6 +89,7 @@ class LLMWorker(QObject):
         self._queue.put(None)
 
     def _loop(self):
+        self.interface = GUIInterface()
         # Runs entirely on this one dedicated thread for the whole
         # app's lifetime. GUIInterface (and the browser it opens) is
         # created here, on first use, and reused for every prompt.
