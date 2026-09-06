@@ -1,0 +1,19 @@
+| # Cross-Platform OS Automation Module (pynput)
+
+This module provides low-level hardware/OS-level input primitives for autonomous agent execution loops, supporting both Windows and Linux seamlessly.
+
+## Prerequisites
+Install the required package via pip:
+```bash
+pip install pynput
+```
+
+## Core Primitives
+- **`move_and_click(x, y, button)`**: Moves the mouse cursor to absolute screen coordinates and performs a click.
+- **`type_string(text, interval)`**: Simulates natural keyboard input character by character.
+- **`press_key_combination(keys)`**: Executes modifier combinations (e.g., `[Key.ctrl, 'c']`).
+
+## Critical Considerations
+1. **Window Focus**: OS-level automation injects events globally. Ensure the target application window is active and focused before executing input actions.
+2. **Safety & Fail-safes**: Because these tools interact directly with the desktop environment, always implement a hard abort mechanism or emergency exit sequence in your runner wrapper.
+3. **Permissions**: On certain Linux display servers (like Wayland) or heavily restricted environments, accessibility or input permissions may be required to simulate global keystrokes and mouse movements.

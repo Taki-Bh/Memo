@@ -272,7 +272,7 @@ class SkillExecutionLoop:
             return Runner.run(str(cmd))
         if name == "write":
             sep_index = args.find("||")
-            return Runner.write(args[:sep_index], args[sep_index + 1:])
+            return Runner.write(args[:sep_index-1], args[sep_index + 3:])
         if name == "read":
             return Runner.read(args)
 

@@ -1,5 +1,6 @@
-from pathlib import Path
+from pathlib import Path 
 import subprocess
+from core.config import SUDO_PASSWORD
 
 
 def read(path: str) -> str:
@@ -35,23 +36,41 @@ def write(path: str, content: str) -> str:
 
 def exec(command: str) -> str:
     """Execute a shell command and return its output (including errors)."""
-    result = subprocess.run(
-        command,
-        shell=True,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
+    actual_command = command
+    input_data = None
+    
+    if SUDO_PASSWORD and "sudo" in command:
+        if "-S" not in command:
+            actual_command = command.replace("sudo", "sudo -S", 1)
+        input_data = f"{SUDO_PASSWORD}\n"
+
+    try:
+        result = subprocess.run(
+            actual_command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            input=input_data,
+        )
+    except subprocess.TimeoutExpired as e:
+        output = ""
+        if e.stdout:
+            output += e.stdout
+        if e.stderr:
+            output += e.stderr
+        output += "[Command timed out after 30 seconds]"
+        final_output = f"[EXITCODE=-1]{output}"
+        print(final_output)
+        return final_output
 
     output = result.stdout
     if result.stderr:
         output += result.stderr
 
-    if result.returncode != 0:
-        output += f"\n[Command failed with exit code {result.returncode}]"
-
-    print(output)
-    return output
+    final_output = f"[EXITCODE={result.returncode}]{output}"
+    print(final_output)
+    return final_output
 
 
 TOOLS = {
@@ -67,7 +86,6 @@ TOOLS_DEFINITIONS = [
             "description": (
                 "Read a file "
                 "For files"
-               
             ),
             "parameters": {
                 "type": "object",
