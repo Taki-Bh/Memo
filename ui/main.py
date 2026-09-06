@@ -15,7 +15,8 @@ import sys
 import queue
 import threading
 from pathlib import Path
-
+import os
+import json
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
@@ -67,7 +68,7 @@ class LLMWorker(QObject):
     """
     finished = Signal(str)
     error = Signal(str)
-
+    stateUpdated = Signal(dict)
     def __init__(self):
         super().__init__()
         self.interface = None
@@ -93,6 +94,8 @@ class LLMWorker(QObject):
         # Runs entirely on this one dedicated thread for the whole
         # app's lifetime. GUIInterface (and the browser it opens) is
         # created here, on first use, and reused for every prompt.
+        if self.interface:
+            self.interface.assistant.agent_router.execution_loop.stateUpdated.connect(self.stateUpdated.emit)
         while True:
             prompt = self._queue.get()
             if prompt is None:  # sentinel → shut down
@@ -102,6 +105,9 @@ class LLMWorker(QObject):
             try:
                 if self.interface is None:
                     self.interface = GUIInterface()   # constructed once, on this thread
+                    
+
+                      
                 response = self.interface.run(prompt)
                 self.finished.emit(response)
             except Exception as e:
@@ -137,8 +143,7 @@ class MemoApp(QObject):
         self._active_conversation = None
 
         self.worker = LLMWorker()
-        self.worker.finished.connect(self.on_llm_response)
-        self.worker.error.connect(self.on_llm_error)
+        
 
         self._wire_signals()
         self._load_demo_data()
@@ -157,7 +162,14 @@ class MemoApp(QObject):
         self.chat_view.suggestionActivated.connect(self._on_suggestion_activated)
 
         self.window.rootSplitter.splitterMoved.connect(lambda *_: None)
-
+        self.worker.finished.connect(self.on_llm_response)
+        self.worker.error.connect(self.on_llm_error)
+        self.worker.stateUpdated.connect(self._handle_state_update)
+    def _handle_state_update(self, state: dict):
+        print("State updated:", state)
+        with open("state_log.net", "a") as f:
+            f.write(json.dumps(state) + "\n")
+        self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
     def _load_demo_data(self):
         self.sidebar.set_conversations(DEMO_CONVERSATIONS)
 
