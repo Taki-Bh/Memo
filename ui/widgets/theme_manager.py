@@ -83,6 +83,11 @@ THEMES = {
         "file": "theme_amber_terminal.qss",
         "swatch": [QColor("#0C0A00"), QColor("#1A1400"), QColor("#FFB000")],
     },
+    "thug_barber": {
+        "label": "Thug Life & Erotic Barber Hood",
+        "file": "theme_thug_barber.qss",
+        "swatch": [QColor("#120A0F"), QColor("#21121C"), QColor("#FF1493")],
+    },
 }
 
 
