@@ -38,7 +38,7 @@ def exec(command: str) -> str:
     """Execute a shell command and return its output (including errors)."""
     actual_command = command
     input_data = None
-    
+
     if SUDO_PASSWORD and "sudo" in command:
         if "-S" not in command:
             actual_command = command.replace("sudo", "sudo -S", 1)
@@ -53,25 +53,32 @@ def exec(command: str) -> str:
             timeout=30,
             input=input_data,
         )
+
     except subprocess.TimeoutExpired as e:
-        output = ""
-        if e.stdout:
-            output += e.stdout
-        if e.stderr:
-            output += e.stderr
-        output += "[Command timed out after 30 seconds]"
+        def decode_output(value):
+            if isinstance(value, bytes):
+                return value.decode("utf-8", errors="replace")
+            return value or ""
+
+        output = (
+            decode_output(e.stdout)
+            + decode_output(e.stderr)
+            + "[Command timed out after 30 seconds]"
+        )
+
         final_output = f"[EXITCODE=-1]{output}"
         print(final_output)
         return final_output
 
-    output = result.stdout
+    output = result.stdout or ""
+
     if result.stderr:
         output += result.stderr
 
     final_output = f"[EXITCODE={result.returncode}]{output}"
     print(final_output)
-    return final_output
 
+    return final_output
 
 TOOLS = {
     "read": read,

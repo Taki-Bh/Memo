@@ -126,13 +126,8 @@ class SkillExecutionLoop(QObject):
                 )
                 raw_response = self.provider.generate(nudge)
                 call, task_state, cleaned_response = extract_unified_output(raw_response)
-
-                if call is None and task_state is None:
-                    return {
-                        "status": "done",
-                        "state": current_state,
-                        "response": cleaned_response,
-                    }
+                
+                
 
             if call:
                 result = self._execute_tool(call)

@@ -114,8 +114,7 @@ class SkillRouterAgent(Agent):
             # ---------------------------------------------------------
             exec_state=result.get("state")
             print(f"Execution state: {exec_state}")
-            cleaned_response = exec_state.get('message').strip() or f"Empty response from skill execution. {str(exec_state)}"
-            print(f"Cleaned response: {cleaned_response}")
+            cleaned_response = (exec_state.get('message') or '').strip() or f"Empty response from skill execution. {str(exec_state)}" 
             """if skill.get("name") == "skill-creator":
                 return self._save_created_skill(
                     cleaned_response

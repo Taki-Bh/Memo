@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 from core.context import LLMContext
 from providers.chatgpt.chatgpt import ChatGPTProvider
@@ -13,6 +14,8 @@ class CommandParser:
 
     AGENT_COMMAND = "/agent"
     SWAP_COMMAND = "/swap"
+    SAVE_COMMAND = "/save"
+    TITLE_COMMAND = "/title"
 
     @classmethod
     def parse(cls, text: str) -> tuple[str | None, str]:
@@ -35,6 +38,10 @@ class CommandParser:
             provider_name = text[len(cls.SWAP_COMMAND):].strip().lower()
             return cls.SWAP_COMMAND, provider_name
 
+        if text.startswith(cls.SAVE_COMMAND):
+            filename = text[len(cls.SAVE_COMMAND):].strip()
+            return cls.SAVE_COMMAND, filename
+
         return None, text
 
 
@@ -50,6 +57,8 @@ class Assistant():
 
     def __init__(self):
         self.context = LLMContext("", "", {}, [])
+        self.conversation_name = "Untitled Entity"
+        self.conversation_date = datetime.now().isoformat()
 
         # Provider automatically chooses its available mode.
         self.llm = GeminiProvider(self.context)
@@ -76,6 +85,61 @@ class Assistant():
         self.agent_router.llm = self.llm
         return f"Successfully switched provider to: {self.llm.mode}"
 
+    def suggest_and_set_title(self) -> str:
+        """Ask the LLM to suggest a short entity name for the current conversation."""
+        if not self.context.messages:
+            return "No conversation history to name yet."
+        
+        prompt = (
+            "Based on the conversation so far, suggest a short, descriptive, concise entity name/title "
+            "(maximum 5 words, no quotes, no punctuation at the end). Return ONLY the name."
+        )
+        try:
+            suggested = self.llm.generate(prompt, await_response=True)
+            if suggested:
+                self.conversation_name = suggested.strip()
+                return f"Conversation entity name set to: '{self.conversation_name}'"
+        except Exception as e:
+            return f"Error generating name: {e}"
+        return "Could not generate a name."
+
+    def save_conversation(self, filename: str = "") -> str:
+        """Save the conversation entity (name, date, messages) to memory/conversations.json or specified file."""
+        import json
+        from pathlib import Path
+
+        target = Path(filename) if filename else Path("memory/conversations.json")
+
+        new_entity = {
+            "name": self.conversation_name,
+            "date": self.conversation_date,
+            "messages": [{"role": role, "content": content} for role, content in self.context.messages]
+        }
+
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+
+            # Load existing data if the file already exists and is valid
+            if target.exists():
+                try:
+                    with open(target, "rt") as f:
+                        data = json.load(f)
+                    if not isinstance(data, dict) or "entities" not in data:
+                        data = {"entities": []}
+                except (json.JSONDecodeError, OSError):
+                    data = {"entities": []}
+            else:
+                data = {"entities": []}
+
+            data["entities"].append(new_entity)
+
+            with open(target, "wt") as f:
+                json.dump(data, f, indent=2)
+
+            return f"Successfully saved conversation entity '{self.conversation_name}' to {target}"
+        except Exception as e:
+            return f"Error saving conversation: {e}"
+
     def send(self, user_text: str, await_response: bool = True) -> str:
         """
         Process a message from the user.
@@ -98,6 +162,12 @@ class Assistant():
 
         if command == CommandParser.SWAP_COMMAND:
             return self.swap_provider(prompt)
+
+        if command == CommandParser.SAVE_COMMAND:
+            # Automatically suggest a name if not explicitly set or on save
+            if self.conversation_name == "Untitled Entity" and self.context.messages:
+                self.suggest_and_set_title()
+            return self.save_conversation(prompt)
 
         return self._send_to_llm(
             prompt,
@@ -139,6 +209,7 @@ class TerminalInterface:
         print("Commands:")
         print("  /agent <prompt>  → send request to agent router")
         print("  /swap <provider> → swap provider (chatgpt/gemini)")
+        print("  /save [path]     → save conversation entity to json")
         print("  /quit             → exit")
         print()
 
@@ -164,10 +235,6 @@ class TerminalInterface:
                 print("\nGoodbye!")
                 break
 
-            """except Exception as e:
-                print(f"\nError: {type(e).__name__}")
-                print(e)"""
-
             time.sleep(0.016)
 
 
@@ -184,37 +251,20 @@ class GUIInterface:
         print()
         print("Commands:")
         print("  /agent <prompt>  → send request to agent router")
-        print("  /swap <provider> → swap provider (chatgpt/gemini)")
+        print(
+            "  /swap <provider> → swap provider (chatgpt/gemini)"
+        )
+        print("  /save [path]     → save conversation entity to json")
         print("  /quit             → exit")
         print()
 
         prompt = prompt.strip()
 
         if not prompt:
-            warn("No prompt provided.")
+            warn(
+                "No prompt provided."
+            )
             return "No prompt provided."
 
-        if prompt == "/quit":
-            print("Goodbye!")
-            return "Goodbye!"
-
         response = self.assistant.send(prompt)
-
-        if response:
-            print("\nResponse:")
-            print(response)
-            print()
         return response
-
-
-def start_interface(on_terminal=True):
-    assistant = Assistant()
-    terminal = TerminalInterface(assistant)
-    if on_terminal:
-        terminal.run()
-    else:
-        print("GUI interface handling.")
-
-
-if __name__ == "__main__":
-    start_interface()
