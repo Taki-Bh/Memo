@@ -5,12 +5,14 @@ from providers.chatgpt.chatgpt import ChatGPTProvider
 from providers.gemini.gemini import GeminiProvider
 from agents.skill_router import SkillRouterAgent
 from logging import warn
+from PyQt6.QtCore import QObject, pyqtSignal
 
 
 class CommandParser:
     """Parses slash commands entered by the user."""
 
     AGENT_COMMAND = "/agent"
+    SWAP_COMMAND = "/swap"
 
     @classmethod
     def parse(cls, text: str) -> tuple[str | None, str]:
@@ -29,10 +31,14 @@ class CommandParser:
 
             return cls.AGENT_COMMAND, prompt
 
+        if text.startswith(cls.SWAP_COMMAND):
+            provider_name = text[len(cls.SWAP_COMMAND):].strip().lower()
+            return cls.SWAP_COMMAND, provider_name
+
         return None, text
 
 
-class Assistant:
+class Assistant():
     """
     Main interface between the GUI and the AI system.
 
@@ -47,11 +53,28 @@ class Assistant:
 
         # Provider automatically chooses its available mode.
         self.llm = GeminiProvider(self.context)
-
+        providerChanged = pyqtSignal(str)
         # Agent responsible for routing requests to skills/agents.
         self.agent_router = SkillRouterAgent(self.llm)
 
         print(f"Using provider: {self.llm.mode}")
+
+    def swap_provider(self, provider_name: str) -> str:
+        """Swap the LLM provider between chatgpt and gemini."""
+        provider_name = provider_name.strip().lower()
+        if provider_name in ["chatgpt", "gpt", "openai"]:
+            self.llm = ChatGPTProvider(self.context)
+            self.agent_router = SkillRouterAgent(self.llm)
+            
+        elif provider_name in ["gemini", "google"]:
+            self.llm = GeminiProvider(self.context)
+            self.agent_router = SkillRouterAgent(self.llm)
+        else:
+            return f"Unknown provider '{provider_name}'. Available providers: chatgpt, gemini"
+        
+        # Update the router's llm reference
+        self.agent_router.llm = self.llm
+        return f"Successfully switched provider to: {self.llm.mode}"
 
     def send(self, user_text: str, await_response: bool = True) -> str:
         """
@@ -67,11 +90,14 @@ class Assistant:
         command, prompt = CommandParser.parse(user_text)
 
         if command == CommandParser.AGENT_COMMAND:
-            resp=self._send_to_agent(
+            resp = self._send_to_agent(
                 prompt,
                 await_response=await_response
             )
             return resp
+
+        if command == CommandParser.SWAP_COMMAND:
+            return self.swap_provider(prompt)
 
         return self._send_to_llm(
             prompt,
@@ -112,6 +138,7 @@ class TerminalInterface:
         print()
         print("Commands:")
         print("  /agent <prompt>  → send request to agent router")
+        print("  /swap <provider> → swap provider (chatgpt/gemini)")
         print("  /quit             → exit")
         print()
 
@@ -137,44 +164,46 @@ class TerminalInterface:
                 print("\nGoodbye!")
                 break
 
-            except Exception as e:
+            """except Exception as e:
                 print(f"\nError: {type(e).__name__}")
-                print(e)
+                print(e)"""
 
             time.sleep(0.016)
+
+
 class GUIInterface:
     """Placeholder for a future GUI interface implementation."""
 
     def __init__(self, assistant: Assistant = None):
         self.assistant = assistant or Assistant()
 
-    def run(self,prompt):
-        print("GUI interface handling")  
+    def run(self, prompt):
+        print("GUI interface handling")
         print("AI Assistant")
         print(f"Provider: {self.assistant.llm.mode}")
         print()
         print("Commands:")
         print("  /agent <prompt>  → send request to agent router")
+        print("  /swap <provider> → swap provider (chatgpt/gemini)")
         print("  /quit             → exit")
         print()
-       
+
         prompt = prompt.strip()
 
         if not prompt:
-                    warn("No prompt provided.")
-                    return "No prompt provided."
+            warn("No prompt provided.")
+            return "No prompt provided."
 
         if prompt == "/quit":
-                    print("Goodbye!")
-                    return "Goodbye!"
-                    
+            print("Goodbye!")
+            return "Goodbye!"
 
         response = self.assistant.send(prompt)
 
         if response:
-                    print("\nResponse:")
-                    print(response)
-                    print()
+            print("\nResponse:")
+            print(response)
+            print()
         return response
 
 
@@ -185,8 +214,6 @@ def start_interface(on_terminal=True):
         terminal.run()
     else:
         print("GUI interface handling.")
-
-
 
 
 if __name__ == "__main__":

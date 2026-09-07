@@ -17,6 +17,7 @@ import threading
 from pathlib import Path
 import os
 import json
+import traceback
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QApplication, QVBoxLayout
 
@@ -107,11 +108,16 @@ class LLMWorker(QObject):
                     self.interface = GUIInterface()   # constructed once, on this thread
                     
 
-                      
+                
                 response = self.interface.run(prompt)
+                if prompt.find("/swap") >-1:
+                    self.interface.assistant.agent_router.execution_loop.stateUpdated.disconnect(self.stateUpdated.emit)
+                    self.interface.assistant.agent_router.execution_loop.stateUpdated.connect(self.stateUpdated.emit)
+                    
                 self.finished.emit(response)
             except Exception as e:
-                self.error.emit(str(e))
+                
+                self.error.emit(str(e)+format.print_exc())
             finally:
                 self._busy.clear()
 
@@ -236,6 +242,7 @@ class MemoApp(QObject):
     def on_llm_error(self, error_message):
         self.chat_view.show_typing(False)
         self.chat_view.add_ai_message(f"Error: {error_message}")
+        
 
     def _deliver_reply(self, user_text: str):
         self.chat_view.show_typing(False)
