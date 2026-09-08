@@ -178,7 +178,7 @@ always be present.
     "cmd": "complete bash command"
   },
   "task_state": {
-    "last_checkpoint": "short_label",
+    "last_checkpoint": "Short Label",
     "status": "in_progress|awaiting_user_input|blocked|done",
     "last_question_to_user": "... or null",
     "remaining_work": ["..."],
@@ -216,7 +216,7 @@ Read, task still in progress:
 {
   "call": {"op_name": "read", "args": "path/to/file"},
   "task_state": {
-    "last_checkpoint": "reading_input_file",
+    "last_checkpoint": "Reading Input File",
     "status": "in_progress",
     "last_question_to_user": null,
     "remaining_work": ["parse file", "write output"],
@@ -230,7 +230,7 @@ Write, task still in progress:
 {
   "call": {"op_name": "write", "args": "path/to/file || content"},
   "task_state": {
-    "last_checkpoint": "writing_output",
+    "last_checkpoint": "Writing Output File",
     "status": "in_progress",
     "last_question_to_user": null,
     "remaining_work": ["verify output"],
@@ -244,7 +244,7 @@ Exec, awaiting user input next:
 {
   "call": {"op_name": "exec", "cmd": "ls -la ~"},
   "task_state": {
-    "last_checkpoint": "listing_home_dir",
+    "last_checkpoint": "listing Home Directory",
     "status": "awaiting_user_input",
     "last_question_to_user": "Which file should I use?",
     "remaining_work": ["select target file", "process it"],
@@ -257,7 +257,7 @@ No Runner call needed this turn, task fully done:
 ```json
 {
   "call": null,
-  "task_state": {"status" : done", "last_checkpoint": "finalizing", "last_question_to_user": null, "remaining_work": [], "context": {},"message": Message indicating the verdict of the requested task}
+  "task_state": {"status" : done", "last_checkpoint": "Finalizing", "last_question_to_user": null, "remaining_work": [], "context": {},"message": Message indicating the verdict of the requested task}
 }
 ```
 
