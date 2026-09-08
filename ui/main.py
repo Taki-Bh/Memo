@@ -33,25 +33,15 @@ if (ROOT_DIR.parent / "memory").exists() and not (ROOT_DIR / "memory").exists():
 else:
     PROJECT_ROOT = ROOT_DIR
 
-UI_DIR = PROJECT_ROOT / "ui" /"ui"
+UI_DIR = PROJECT_ROOT / "ui" / "ui"
 STYLES_DIR = PROJECT_ROOT / "styles"
 MEMORY_DIR = PROJECT_ROOT / "memory"
 
-# ----------------------------------------------------------------------
-# Sidebar split ratio — change these two numbers to change the 20/80
-# proportion. They're passed to QSplitter.setSizes() on first show and
-# whenever the window is resized, so Designer's own splitter geometry
-# is only a starting point.
-# ----------------------------------------------------------------------
 SIDEBAR_RATIO = 0.20
 CHAT_RATIO = 0.80
 
 
 class LLMWorker(QObject):
-    """
-    Runs every GUIInterface/Playwright call on ONE dedicated, persistent
-    plain thread — never QThread, and never a fresh thread per call.
-    """
     finished = Signal(str)
     error = Signal(str)
     stateUpdated = Signal(dict)
@@ -100,8 +90,6 @@ class LLMWorker(QObject):
 
 
 class MockAssistant:
-    """Stand-in for a real model/API call — replace freely."""
-
     def reply_to(self, user_text: str, await_response=True) -> str:
         response = GUIInterface().run(user_text)
         return response
@@ -152,6 +140,7 @@ class MemoApp(QObject):
         with open("state_log.net", "a") as f:
             f.write(json.dumps(state) + "\n")
         self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
+
     def _load_past_conversations(self):
         conversations_list = []
         self._loaded_conversations_map = {}
@@ -169,7 +158,6 @@ class MemoApp(QObject):
                     date_str = entity.get("date", now.isoformat())
                     convs = entity.get("messages", [])
 
-                    # Parse date
                     try:
                         dt = datetime.fromisoformat(date_str)
                     except Exception:
@@ -200,7 +188,6 @@ class MemoApp(QObject):
             print(f"Error loading conversation file: {e}")
 
         if not conversations_list:
-            # Fallback/demo if no past conversations found
             conversations_list = [
                 {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "🧳"},
                 {"id": "c2", "title": "Refactor auth module", "group": "Today", "icon": "🛠️"},
@@ -251,6 +238,12 @@ class MemoApp(QObject):
         self.chat_view.composer.text_edit.setFocus()
 
     def _on_message_sent(self, text: str):
+        text_stripped = text.strip()
+        if text_stripped == "/quit":
+            self.worker.stop()
+            QApplication.quit()
+            return
+
         if self.worker.is_busy():
             return
 
@@ -279,16 +272,15 @@ def load_stylesheet(app: QApplication):
     saved_theme = theme_manager.get_saved_theme()
     app.setStyleSheet(theme_manager.load_theme_qss(saved_theme))
 
-
 def main():
-    app = QApplication(sys.argv)
-    app.setApplicationName("Memo")
-    load_stylesheet(app)
+        app = QApplication(sys.argv)
+        app.setApplicationName("Memo")
+        load_stylesheet(app)
 
-    memo = MemoApp()
-    memo.show()
+        memo = MemoApp()
+        memo.show()
 
-    sys.exit(app.exec())
+        sys.exit(app.exec())
 
 
 if __name__ == "__main__":

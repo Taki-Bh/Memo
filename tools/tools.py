@@ -9,20 +9,7 @@ def read(path: str) -> str:
 
     if not target.exists():
         raise FileNotFoundError(f"Path does not exist: {path}")
-
-    if target.is_dir():
-        entries = []
-
-        for item in sorted(target.iterdir()):
-            if item.is_dir():
-                entries.append(f"[DIR]  {item.name}")
-            else:
-                entries.append(f"[FILE] {item.name}")
-
-        return "\n".join(entries)
-
     return target.read_text(encoding="utf-8")
-
 
 def write(path: str, content: str) -> str:
     """Write text content to a file."""

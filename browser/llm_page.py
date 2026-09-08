@@ -101,6 +101,7 @@ class LLMPage:
         prompt_input = self.page.locator(self.PROMPT_SELECTOR)
         prompt_input.click()
         prompt_input.fill(prompt)
+        time.sleep(0.1)  # Allow time for the input to register
 
         self.page.locator(self.SUBMIT_SELECTOR).click()
 
