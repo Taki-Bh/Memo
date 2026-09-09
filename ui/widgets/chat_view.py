@@ -1,15 +1,3 @@
-"""
-ChatView
-========
-
-Loads ui/chat_view.ui (header + scrollable message area + composer
-placeholder) and layers on:
-
-  * the empty state ("How can I help?" + suggestion cards)
-  * appending user/AI ChatMessage bubbles
-  * the animated "thinking" indicator
-  * embedding the Composer widget into composerContainer
-"""
 from datetime import datetime
 from pathlib import Path
 
@@ -52,7 +40,8 @@ class ChatView(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui)
 
-        self.ui.modelSelectorCombo.addItems(["Memo — Balanced", "Memo — Fast", "Memo — Precise"])
+        self.ui.modelSelectorCombo.addItems(["Gemini", "ChatGPT"])
+        self.ui.modelSelectorCombo.currentTextChanged.connect(self._on_model_changed)
 
         # Embed the composer into its placeholder container.
         composer_layout = QVBoxLayout(self.ui.composerContainer)
@@ -73,6 +62,24 @@ class ChatView(QWidget):
         self._messages_layout.addItem(self._tail_spacer)
 
         self._has_messages = False
+        self._internal_change = False
+
+    def _on_model_changed(self, text: str):
+        if self._internal_change:
+            return
+        provider = text.lower()
+        if "chatgpt" in provider:
+            self.messageSent.emit("/swap chatgpt")
+        elif "gemini" in provider:
+            self.messageSent.emit("/swap gemini")
+
+    def set_current_provider(self, provider_name: str):
+        self._internal_change = True
+        for i in range(self.ui.modelSelectorCombo.count()):
+            if provider_name.lower() in self.ui.modelSelectorCombo.itemText(i).lower():
+                self.ui.modelSelectorCombo.setCurrentIndex(i)
+                break
+        self._internal_change = False
 
     # ------------------------------------------------------------------
     # Empty state

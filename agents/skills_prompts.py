@@ -65,11 +65,6 @@ MATCH:
 CONTINUE:
 {"action": "continue_skill", "path": "path/to/skill_file.md"}
 
-DRAFT:
-{"action": "draft_new_skill", "suggested_name": "kebab-case-name"}
-
-DIRECT:
-{"action": "respond_directly"}
 
 ## Skill Index
 
@@ -257,7 +252,7 @@ No Runner call needed this turn, task fully done:
 ```json
 {
   "call": null,
-  "task_state": {"status" : done", "last_checkpoint": "Finalizing", "last_question_to_user": null, "remaining_work": [], "context": {},"message": Message indicating the verdict of the requested task}
+  "task_state": {"status" : "done", "last_checkpoint": "Finalizing", "last_question_to_user": null, "remaining_work": [], "context": {},"message": Message indicating the verdict of the requested task}
 }
 ```
 

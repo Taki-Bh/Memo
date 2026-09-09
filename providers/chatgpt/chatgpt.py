@@ -19,7 +19,7 @@ class ChatGPTProvider(LLMProvider):
         use_browser: bool | None = None,
     ):
         super().__init__(context)
-
+        self.name = "ChatGPT"
         api_key = api_key or os.getenv("OPENAI_API_KEY")
 
         # Explicit browser mode

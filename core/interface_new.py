@@ -66,7 +66,7 @@ class Assistant():
         # Agent responsible for routing requests to skills/agents.
         self.agent_router = SkillRouterAgent(self.llm)
 
-        print(f"Using provider: {self.llm.mode}")
+        print(f"Using provider: {self.llm.name}")
 
     def swap_provider(self, provider_name: str) -> str:
         """Swap the LLM provider between chatgpt and gemini."""
@@ -83,7 +83,7 @@ class Assistant():
         
         # Update the router's llm reference
         self.agent_router.llm = self.llm
-        return f"Successfully switched provider to: {self.llm.mode}"
+        return f"Successfully switched provider to: {self.llm.name}"
 
     def suggest_and_set_title(self) -> str:
         """Ask the LLM to suggest a short entity name for the current conversation."""

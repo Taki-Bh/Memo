@@ -18,8 +18,10 @@ class GeminiProvider(LLMProvider):
         model: str = "gpt-5.6",
         use_browser: bool | None = None,
     ):
+        
         print("Initializing GeminiProvider...")
         super().__init__(context)
+        self.name="Gemini"
         print("No API key found. Using browser mode.")
         api_key = api_key or os.getenv("OPENAI_API_KEY")
 

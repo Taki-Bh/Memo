@@ -140,7 +140,6 @@ class MemoApp(QObject):
         with open("state_log.net", "a") as f:
             f.write(json.dumps(state) + "\n")
         self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
-
     def _load_past_conversations(self):
         conversations_list = []
         self._loaded_conversations_map = {}
@@ -231,19 +230,18 @@ class MemoApp(QObject):
 
     def _open_preferences(self):
         dialog = PreferencesDialog(self.window)
+        dialog.themeChanged.connect(self._on_theme_changed)
         dialog.exec()
+
+    def _on_theme_changed(self, key: str):
+        # Handle theme change if needed globally or update components
+        pass
 
     def _on_suggestion_activated(self, label: str):
         self.chat_view.composer.text_edit.setPlainText(label)
         self.chat_view.composer.text_edit.setFocus()
 
     def _on_message_sent(self, text: str):
-        text_stripped = text.strip()
-        if text_stripped == "/quit":
-            self.worker.stop()
-            QApplication.quit()
-            return
-
         if self.worker.is_busy():
             return
 
@@ -272,15 +270,16 @@ def load_stylesheet(app: QApplication):
     saved_theme = theme_manager.get_saved_theme()
     app.setStyleSheet(theme_manager.load_theme_qss(saved_theme))
 
+
 def main():
-        app = QApplication(sys.argv)
-        app.setApplicationName("Memo")
-        load_stylesheet(app)
+    app = QApplication(sys.argv)
+    app.setApplicationName("Memo")
+    load_stylesheet(app)
 
-        memo = MemoApp()
-        memo.show()
+    memo = MemoApp()
+    memo.show()
 
-        sys.exit(app.exec())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ class LLMProvider(ABC):
     def __init__(self, context : LLMContext):
         self.context = context
         self.skill_index = build_skill_index()
+        self.name=" LLMProvider"
         #self.generate(SKILL_INSTRUCTION,await_response=False)
     @abstractmethod
     def generate(self,prompt,await_response=True):
