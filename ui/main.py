@@ -242,6 +242,11 @@ class MemoApp(QObject):
         self.chat_view.composer.text_edit.setFocus()
 
     def _on_message_sent(self, text: str):
+        if text.strip() == "/quit":
+            self.worker.stop()
+            QApplication.quit()
+            return
+
         if self.worker.is_busy():
             return
 

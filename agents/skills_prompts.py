@@ -289,6 +289,7 @@ Output Object (with `"call"` populated).
 ---
 
 ## Task Completion
+When the task is completed you are to reset to your normal LLM mode and await the next user request.
 
 Complete the task only when all requested requirements and necessary actions are finished and the result is usable. Never claim completion while work remains.
 
