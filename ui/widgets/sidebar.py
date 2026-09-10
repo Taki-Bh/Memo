@@ -69,6 +69,7 @@ class Sidebar(QWidget):
         self._rebuild()
 
     def select_conversation(self, conversation_id: str):
+        print(self._items)
         for cid, item in self._items.items():
             item.set_selected(cid == conversation_id)
 
@@ -95,7 +96,10 @@ class Sidebar(QWidget):
 
             for conv in groups[group]:
                 item = ConversationItem(conv["id"], conv["title"], conv.get("icon", "💬"))
-                item.clicked.connect(self._on_item_clicked)
+                print(f"item for {conv['id']} clicked.connect to _on_item_clicked, name = {conv['title']       }")
+                item.clicked.connect(
+                    lambda checked=False, cid=conv["id"]: self._on_item_clicked(cid)
+                )
                 item.renameRequested.connect(self.conversationRenamed.emit)
                 item.deleteRequested.connect(self.conversationDeleted.emit)
                 item.archiveRequested.connect(self.conversationArchived.emit)
@@ -105,7 +109,9 @@ class Sidebar(QWidget):
         self._list_layout.addItem(self._tail_spacer)
 
     def _on_item_clicked(self, conversation_id: str):
+        conversation_id=int(conversation_id)
         self.select_conversation(conversation_id)
+        #print(f"Sidebar: emitting conversationSelected for {conversation_id}")
         self.conversationSelected.emit(conversation_id)
 
     def _filter_conversations(self, query: str):

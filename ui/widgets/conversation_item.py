@@ -48,15 +48,16 @@ class ConversationItem(QWidget):
 
         layout.addWidget(self.icon_label)
         layout.addWidget(self.title_label, 1)
-
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
 
     def set_selected(self, selected: bool):
         self._selected = selected
         self.setProperty("selected", selected)
+        print(f"ConversationItem {self.conversation_id} set_selected({selected})")
         self.style().unpolish(self)
         self.style().polish(self)
+        print("is there error?")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
