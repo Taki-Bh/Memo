@@ -41,7 +41,13 @@ class GeminiPage(LLMPage):
     def send_message(self, prompt):
 
         res=super().send_message(prompt)
-        time.sleep(2)
+        #
+        # time.sleep(2)
+        print(f"Prompt sent: {prompt}")
+        print("****************************************************************************************************************************************************************************************")
+        print(f"Input value after send_message: {self.page.locator(self.PROMPT_SELECTOR).text_content()}")
+        print("****************************************************************************************************************************************************************************************")
+        print(f"sent prompt = post-sent prompt? {prompt==self.page.locator(self.PROMPT_SELECTOR).text_content()}")
         return res
 
     def handle_response(self, response):
@@ -91,9 +97,9 @@ class GeminiPage(LLMPage):
                     while True:
                         
                         
-                        print("Assistant messages:", assistant_msgs.count())
-                        if assistant_msgs:
-                             print("Assistant message:", assistant_msgs.last.text_content())
+                        #print("Assistant messages:", assistant_msgs.count())
+                        #if assistant_msgs:
+                            # print("Assistant message:", assistant_msgs.last.text_content())
                              
                         #print(f"msg = {msg} | old_msg={old_msg}")
                         #if conversation_box.count():
@@ -103,7 +109,7 @@ class GeminiPage(LLMPage):
                     
                         if msg.find('said') > -1:
 
-                            print(f"Parsed message:{msg[msg.find('said')+5:]}")
+                           # print(f"Parsed message:{msg[msg.find('said')+5:]}")
                             
                             msg=msg[msg.find('said')+5:]
                             if msg.lower().find("searching the web")!=-1:

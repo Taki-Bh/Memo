@@ -8,7 +8,7 @@ def read(path: str) -> str:
     target = Path(path)
 
     if not target.exists():
-        raise FileNotFoundError(f"Path does not exist: {path}")
+        return f"Path does not exist: {path}"
     return target.read_text(encoding="utf-8")
 
 def write(path: str, content: str) -> str:

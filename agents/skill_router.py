@@ -97,7 +97,7 @@ class SkillRouterAgent(Agent):
             # Persist execution state
             # ---------------------------------------------------------
             print("********-************************************")
-            print(f"Execution result: {result}")
+            #print(f"Execution result: {result}")
             new_state = result.get("state")
 
             if result["status"] == "done":
@@ -113,7 +113,7 @@ class SkillRouterAgent(Agent):
             # Skill creator special handling
             # ---------------------------------------------------------
             exec_state=result.get("state")
-            print(f"Execution state: {exec_state}")
+            #print(f"Execution state: {exec_state}")
             cleaned_response = ""
             if exec_state is None:
                 cleaned_response = "Skill execution returned no result."
