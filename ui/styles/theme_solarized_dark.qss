@@ -76,7 +76,7 @@ QSplitter::handle {
 #brandLabel {
     color: #EEE8D5;
     font-size: 16px;
-    font-weight: 600;
+
     letter-spacing: 0.3px;
 }
 
@@ -85,7 +85,7 @@ QSplitter::handle {
     border: 1px solid rgba(181,137,0,0.35);
     border-radius: 12px;
     padding: 8px 12px;
-    font-weight: 600;
+
     text-align: left;
     color: #FBE9BE;
 }
@@ -172,7 +172,7 @@ QSplitter::handle {
 #profileName {
     color: #EEE8D5;
     font-size: 13px;
-    font-weight: 600;
+
 }
 #profilePlan {
     color: #5E7A7C;
@@ -191,7 +191,7 @@ QSplitter::handle {
 }
 #assistantNameLabel {
     font-size: 14px;
-    font-weight: 600;
+
     color: #EEE8D5;
 }
 #statusDot {
@@ -236,7 +236,7 @@ QSplitter::handle {
 }
 #emptyStateHeading {
     font-size: 20px;
-    font-weight: 600;
+
     color: #EEE8D5;
     margin-top: 8px;
     qproperty-alignment: AlignCenter;
@@ -273,7 +273,7 @@ QSplitter::handle {
 #messageAuthor {
     color: #93A1A1;
     font-size: 12px;
-    font-weight: 600;
+
 }
 #messageTimestamp {
     color: #4C6668;
@@ -400,7 +400,7 @@ QSplitter::handle {
     border: 1px solid rgba(181,137,0,0.55);
     background-color: rgba(181,137,0,0.14);
     color: #EEE8D5;
-    font-weight: 600;
+
 }
 #themeSwatch {
     border-radius: 8px;
@@ -412,7 +412,7 @@ QSplitter::handle {
     border-radius: 10px;
     padding: 8px 16px;
     color: #EEE8D5;
-    font-weight: 600;
+
 }
 #preferencesCloseButton:hover {
     background-color: rgba(255,255,255,0.1);
