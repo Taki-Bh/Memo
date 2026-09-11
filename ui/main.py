@@ -1,13 +1,3 @@
-"""
-Memo — AI Assistant desktop UI
-=================================
-
-Entry point. Loads ui/main_window.ui (a QMainWindow with a QSplitter
-implementing the 20/80 sidebar/chat split), embeds the Sidebar and
-ChatView custom widgets into it, applies styles/theme.qss, and wires
-up past conversation loading upon start categorized into Today, Yesterday,
-Previous 7 Days, and Older.
-"""
 import sys
 import queue
 import threading
@@ -173,7 +163,7 @@ class MemoApp(QObject):
                     else:
                         group = "Older"
 
-                    conv_id = i
+                    conv_id = str(i)
                     self._loaded_conversations_map[conv_id] = convs
 
                     conversations_list.append({
@@ -195,6 +185,8 @@ class MemoApp(QObject):
                 {"id": "c5", "title": "Resume feedback", "group": "Previous 7 Days", "icon": "📄"},
                 {"id": "c6", "title": "First conversation", "group": "Older", "icon": "💬"},
             ]
+            for c in conversations_list:
+                self._loaded_conversations_map[c["id"]] = []
 
         self.sidebar.set_conversations(conversations_list)
 

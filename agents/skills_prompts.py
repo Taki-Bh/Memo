@@ -44,9 +44,6 @@ Analyze the user's request and choose exactly ONE of these four outcomes:
    - an answer to a question asked by the skill
    - information required by the current skill step
 
-3. DRAFT — no existing skill matches, but the request represents a repeatable capability worth turning into a new skill.
-
-4. DIRECT — no existing skill matches and this is an ordinary one-off request that does not warrant a new skill.
 
 ## Constraints
 

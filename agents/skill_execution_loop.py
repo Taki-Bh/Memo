@@ -130,13 +130,14 @@ class SkillExecutionLoop(QObject):
                 
 
             if call:
+                self.stateUpdated.emit(current_state)
                 result = self._execute_tool(call)
                 current_state = self._update_prompt_state(
                     task_state or current_state,
                     call,
                     result,
                 )
-                self.stateUpdated.emit(current_state)
+                
 
                 raw_response = self.provider.generate(
                     f"Runner result for '{call.get('op_name')}': {result}. "

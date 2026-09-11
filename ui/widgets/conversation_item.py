@@ -29,6 +29,7 @@ class ConversationItem(QWidget):
         self._selected = False
 
         self.setObjectName("conversationItem")
+        self.setAttribute(Qt.WA_StyledBackground, True)
         self.setCursor(Qt.PointingHandCursor)
         self.setAttribute(Qt.WA_Hover, True)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -54,10 +55,8 @@ class ConversationItem(QWidget):
     def set_selected(self, selected: bool):
         self._selected = selected
         self.setProperty("selected", selected)
-        print(f"ConversationItem {self.conversation_id} set_selected({selected})")
         self.style().unpolish(self)
         self.style().polish(self)
-        print("is there error?")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
