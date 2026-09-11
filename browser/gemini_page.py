@@ -38,17 +38,39 @@ class GeminiPage(LLMPage):
                 else:
                     print("USING WEB SCRAPING")
                 self._open()
-    def send_message(self, prompt):
+    def send_message(self, prompt: str):
+        
+        # Clear out any residual responses from prior prompts
+        self._clear_queue()
 
-        res=super().send_message(prompt)
-        #
-        # time.sleep(2)
-        print(f"Prompt sent: {prompt}")
-        print("****************************************************************************************************************************************************************************************")
-        print(f"Input value after send_message: {self.page.locator(self.PROMPT_SELECTOR).text_content()}")
-        print("****************************************************************************************************************************************************************************************")
-        print(f"sent prompt = post-sent prompt? {prompt==self.page.locator(self.PROMPT_SELECTOR).text_content()}")
-        return res
+        prompt_input = self.page.locator(self.PROMPT_SELECTOR)
+        prompt_input.click()
+        prompt_input.fill(prompt)
+        prompt_input_text=prompt_input.text_content()
+        i=0
+        if len(prompt_input_text)!=len(prompt):
+            print(f"Prompt length mismatch: {len(prompt_input_text)} vs {len(prompt)}")
+            print(f"Prompt input text: {prompt_input_text}")
+            print(f"Original prompt: {prompt}")
+            while True:
+                
+                text_header=f"You will be recieving requested file in batches : [batch {i}]:\n"
+                text_batch_size=len(prompt_input_text)-len(text_header)
+                text_batch=text_header+prompt[i*text_batch_size:min((i+1)*text_batch_size,len(prompt))]
+                if (i+1)*text_batch_size>=len(prompt):
+                    break
+                prompt_input.fill(text_batch)
+                time.sleep(0.5)
+                
+                self.page.locator(self.SUBMIT_SELECTOR).click()
+                self.get_latest_response(timeout_ms=1000, await_response=False)
+                
+                i+=1
+          # Allow time for the input to register
+        else:
+            time.sleep(0.5)
+            self.page.locator(self.SUBMIT_SELECTOR).click()
+                    # Return the prompt text for confirmation
 
     def handle_response(self, response):
         url = response.url

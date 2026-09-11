@@ -88,6 +88,11 @@ THEMES = {
         "file": "theme_thug_barber.qss",
         "swatch": [QColor("#120A0F"), QColor("#21121C"), QColor("#FF1493")],
     },
+    "after_dark": {
+        "label": "After Dark (0% Angel - Mr. Kitty)",
+        "file": "theme_after_dark.qss",
+        "swatch": [QColor("#0b0613"), QColor("#1a0f2e"), QColor("#ff79c6")],
+    },
 }
 
 

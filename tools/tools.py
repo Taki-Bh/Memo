@@ -9,7 +9,14 @@ def read(path: str) -> str:
 
     if not target.exists():
         return f"Path does not exist: {path}"
-    return target.read_text(encoding="utf-8")
+    try:
+        text=target.read_text(encoding="utf-8")
+        return text
+    except Exception as e:
+        return f"Error reading file: {e}"
+        
+
+   
 
 def write(path: str, content: str) -> str:
     """Write text content to a file."""
