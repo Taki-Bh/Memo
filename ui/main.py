@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QApplication, QVBoxLayout
 
 from ui.widgets.chat_view import ChatView
 from ui.widgets.preferences_dialog import PreferencesDialog
+from ui.widgets.files_dialog import FilesDialog
 from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
@@ -218,6 +219,9 @@ class MemoApp(QObject):
         if name == "preferences":
             self._open_preferences()
             return
+        if name == "attachments" or name == "files":
+            self._open_files()
+            return
         print(f"[utility] {name} clicked")
 
     def _open_preferences(self):
@@ -225,8 +229,11 @@ class MemoApp(QObject):
         dialog.themeChanged.connect(self._on_theme_changed)
         dialog.exec()
 
+    def _open_files(self):
+        dialog = FilesDialog(self.window)
+        dialog.exec()
+
     def _on_theme_changed(self, key: str):
-        # Handle theme change if needed globally or update components
         pass
 
     def _on_suggestion_activated(self, label: str):

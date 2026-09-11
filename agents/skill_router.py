@@ -21,7 +21,7 @@ class SkillRouterAgent(Agent):
 
         self.skill_index_json = json.dumps(provider.skill_index)
         self.state_store = StateStore()
-
+        self.role ="SkillRouterAgent"
         self.execution_loop = SkillExecutionLoop(
             provider=provider,
             tools=TOOLS,
