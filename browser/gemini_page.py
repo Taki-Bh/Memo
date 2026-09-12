@@ -57,12 +57,13 @@ class GeminiPage(LLMPage):
                 text_header=f"You are recieving a file in batches (Refrain from return a call/state block until the batches are done/ any call/state block will be ignored) : [batch {i}]:\n"
                 text_batch_size=len(prompt_input_text)-len(text_header)
                 text_batch=text_header+prompt[i*text_batch_size:min((i+1)*text_batch_size,len(prompt))]
-                if (i+1)*text_batch_size>=len(prompt):
-                    break
+                
                 prompt_input.fill(text_batch)
                 time.sleep(0.5)
                 
                 self.page.locator(self.SUBMIT_SELECTOR).click()
+                if (i+1)*text_batch_size>=len(prompt):
+                    break
                 self.get_latest_response(timeout_ms=1000, await_response=False)
                 
                 i+=1
