@@ -55,7 +55,8 @@ class SkillRouterAgent(Agent):
         try:
             response = json.loads(raw[raw.find("{"):raw.rfind("}") + 1])
         except json.JSONDecodeError:
-            return f"Router returned invalid JSON: {raw!r}"
+            raw = self.provider.generate(f"Router returned invalid JSON: {raw!r}, Return a valid JSON for the execution")
+
 
         action = response.get("action")
 
@@ -119,7 +120,7 @@ class SkillRouterAgent(Agent):
                 cleaned_response = "Skill execution returned no result."
             else:
                 cleaned_response = (
-                    exec_state.get("message") or ""
+                    exec_state.get("message") or exec_state.get("last_checkpoint") or ""
                 ).strip() or f"Empty response from skill execution. {exec_state}"
             """if skill.get("name") == "skill-creator":
                 return self._save_created_skill(

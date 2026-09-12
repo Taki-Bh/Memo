@@ -236,7 +236,7 @@ Exec, awaiting user input next:
 {
   "call": {"op_name": "exec", "cmd": "ls -la ~"},
   "task_state": {
-    "last_checkpoint": "listing Home Directory",
+    "last_checkpoint": "Listing Home Directory",
     "status": "awaiting_user_input",
     "last_question_to_user": "Which file should I use?",
     "remaining_work": ["select target file", "process it"],

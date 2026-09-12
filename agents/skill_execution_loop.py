@@ -130,7 +130,9 @@ class SkillExecutionLoop(QObject):
                 
 
             if call:
+                current_state = task_state
                 self.stateUpdated.emit(current_state)
+                
                 result = self._execute_tool(call)
                 current_state = self._update_prompt_state(
                     task_state or current_state,
@@ -147,8 +149,7 @@ class SkillExecutionLoop(QObject):
                 continue
 
             if task_state:
-                current_state = task_state
-                self.stateUpdated.emit(current_state)
+                
 
                 if task_state.get("status") == "done":
                     return {
