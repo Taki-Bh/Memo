@@ -161,13 +161,16 @@ class SkillExecutionLoop(QObject):
                     "Continue the skill execution with the updated Unified Output Object"
                 )
                 continue
-
-            return {
-                "status": "done",
-                "state": current_state,
-                "response": cleaned_response,
-            }
-
+            else:
+                s={
+                    "status": "error",
+                    "state": current_state,
+                    "response": cleaned_response,
+                }
+                print(f"Error: No valid call or task_state found in the response. {s}")
+                print(f"Raw response: {raw_response}")
+                print("Retrying the skill execution with a nudge to return the Unified Output Object.")
+                raw_response = "Error: No valid call or task_state found in the response. {s}"
         return {
             "status": "error",
             "state": current_state,
