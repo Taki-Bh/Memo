@@ -54,7 +54,7 @@ class GeminiPage(LLMPage):
             print(f"Original prompt: {prompt}")
             while True:
                 
-                text_header=f"You will be recieving requested file in batches : [batch {i}]:\n"
+                text_header=f"You are recieving a file in batches (Refrain from return a call/state block until the batches are done/ any call/state block will be ignored) : [batch {i}]:\n"
                 text_batch_size=len(prompt_input_text)-len(text_header)
                 text_batch=text_header+prompt[i*text_batch_size:min((i+1)*text_batch_size,len(prompt))]
                 if (i+1)*text_batch_size>=len(prompt):
