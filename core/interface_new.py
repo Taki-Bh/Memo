@@ -10,7 +10,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 import json
 from core.command_parser import CommandParser
 
-
+import traceback
 class Assistant():
     """
     Main interface between the GUI and the AI system.
@@ -143,7 +143,7 @@ class Assistant():
             return self.save_conversation(prompt)
 
         return self._send_to_llm(
-            prompt+'(Return your message in a format of {"message": "your message here"})',
+            prompt+'(Return your message in a JSON format of {"message": "your message here"})',
             await_response=await_response
         )
 
@@ -157,8 +157,12 @@ class Assistant():
             prompt,
             await_response=await_response
         )
-        parsed_response=json.loads(raw)
-        return parsed_response.get("message", "No message returned from LLM.")
+        try:
+            
+            parsed_response=json.loads(raw[raw.find("{"):])
+            return parsed_response.get("message", "No message returned from LLM.")
+        except json.JSONDecodeError:
+            return raw + traceback.format_exc() + "\n[Error] LLM returned invalid JSON. Please ensure the LLM returns a valid JSON response."
 
     def _send_to_agent(
         self,
