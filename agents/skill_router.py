@@ -28,7 +28,7 @@ class SkillRouterAgent(Agent):
             max_iterations=20,
         )
     def handleRequest(self, prompt: str, session_id: str = "default"):
-        return self.handleRoute(self,prompt, session_id=session_id)
+        return self.handleRoute(prompt, session_id)
     def handleRoute(self,prompt: str, session_id: str = "default"):
 
         state = self.state_store.get(session_id)

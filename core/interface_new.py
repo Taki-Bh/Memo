@@ -7,7 +7,7 @@ from providers.gemini.gemini import GeminiProvider
 from agents.skill_router import SkillRouterAgent
 from logging import warn
 from PyQt6.QtCore import QObject, pyqtSignal
-
+import json
 from core.command_parser import CommandParser
 
 
@@ -143,7 +143,7 @@ class Assistant():
             return self.save_conversation(prompt)
 
         return self._send_to_llm(
-            prompt,
+            prompt+'(Return your message in a format of {"message": "your message here"})',
             await_response=await_response
         )
 
@@ -153,11 +153,12 @@ class Assistant():
         await_response: bool = True
     ) -> str:
         """Send a normal conversation message to the LLM."""
-
-        return self.llm.generate(
+        raw = self.llm.generate(
             prompt,
             await_response=await_response
         )
+        parsed_response=json.loads(raw)
+        return parsed_response.get("message", "No message returned from LLM.")
 
     def _send_to_agent(
         self,
