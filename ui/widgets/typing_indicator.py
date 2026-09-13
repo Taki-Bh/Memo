@@ -41,13 +41,16 @@ class TypingIndicator(QWidget):
         self._timer.timeout.connect(self._tick)
 
     def start(self):
+        
         self._timer.start()
         self.show()
 
     def stop(self):
         self._timer.stop()
         self.hide()
-
+        self.change_typing_message("Thinking...")
+    def change_typing_message(self, msg):
+        self.text_label.setText(msg)
     def _tick(self):
         self._phase = (self._phase + 1) % len(self.dots)
         for i, dot in enumerate(self.dots):

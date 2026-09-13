@@ -142,7 +142,7 @@ class ChatView(QWidget):
         if not self._has_messages:
             self._has_messages = True
             self.empty_state.hide()
-
+    
     def show_typing(self, show: bool):
         self.composer.set_enabled_state(not show)
         if show:

@@ -130,7 +130,8 @@ class MemoApp(QObject):
         print("State updated:", state)
         with open("state_log.net", "a") as f:
             f.write(json.dumps(state) + "\n")
-        self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
+        self.chat_view.typing_indicator.change_typing_message(state.get("last_checkpoint", "No message in state"))
+        #self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
     def _load_past_conversations(self):
         conversations_list = []
         self._loaded_conversations_map = {}
@@ -248,9 +249,10 @@ class MemoApp(QObject):
 
         if self.worker.is_busy():
             return
+        self.chat_view.show_typing(True)
 
         self.chat_view.add_user_message(text)
-        self.chat_view.show_typing(True)
+        
         self.worker.run_prompt(text)
 
     def closeEvent(self, event):
