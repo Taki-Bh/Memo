@@ -3,7 +3,7 @@
 from core.context import LLMContext
 from core.provider import LLMProvider
 from core.exceptions import *
-from browser.chatgpt_page import ChatGPTPage
+from providers.chatgpt.chatgpt_page import ChatGPTPage
 class LLMBrowserProvider(LLMProvider):
 
     def __init__(self, context: LLMContext):

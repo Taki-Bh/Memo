@@ -3,7 +3,7 @@ import re
 from tools.tools import TOOLS_DEFINITIONS, TOOLS
 from agents.skills_prompts import *
 from agents.skill_store import *
-from core.runner import Runner
+from runner.runner import Runner
 from PySide6.QtCore import QObject, Signal
 
 

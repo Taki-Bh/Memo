@@ -28,14 +28,14 @@ class SkillRouterAgent(Agent):
             max_iterations=20,
         )
 
-    def handleRequest(self, prompt: str, session_id: str = "default"):
+    def handleRequest(self,prompt: str, session_id: str = "default"):
 
         state = self.state_store.get(session_id)
 
         # -------------------------------------------------------------
         # Router
         # -------------------------------------------------------------
-
+        
         router_prompt = (
             ROUTER_PROMPT
             .replace("{{SKILL_INDEX_JSON}}", self.skill_index_json)

@@ -16,6 +16,7 @@ class CommandParser:
     SWAP_COMMAND = "/swap"
     SAVE_COMMAND = "/save"
     TITLE_COMMAND = "/title"
+    COMPUTER_COMMAND = "/computer"
 
     @classmethod
     def parse(cls, text: str) -> tuple[str | None, str]:
@@ -155,11 +156,18 @@ class Assistant():
 
         if command == CommandParser.AGENT_COMMAND:
             resp = self._send_to_agent(
+                
                 prompt,
                 await_response=await_response
             )
             return resp
-
+        if command == CommandParser.COMPUTER_COMMAND:
+            resp = self._send_to_agent(
+                command,
+                prompt,
+                await_response=await_response
+            )
+            return resp
         if command == CommandParser.SWAP_COMMAND:
             return self.swap_provider(prompt)
 
