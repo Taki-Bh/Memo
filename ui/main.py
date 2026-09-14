@@ -15,7 +15,7 @@ from ui.widgets.files_dialog import FilesDialog
 from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
-
+from core.communication import ui_to_backend,backend_to_ui
 from core.interface_new import GUIInterface
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -36,6 +36,7 @@ class LLMWorker(QObject):
     finished = Signal(str)
     error = Signal(str)
     stateUpdated = Signal(dict)
+    userInputRequested=Signal(dict)
     def __init__(self):
         super().__init__()
         self.interface = None
@@ -58,6 +59,7 @@ class LLMWorker(QObject):
         self.interface = GUIInterface()
         if self.interface:
             self.interface.assistant.agent_router.execution_loop.stateUpdated.connect(self.stateUpdated.emit)
+            self.interface.assistant.agent_router.execution_loop.userInputRequested.connect(self.userInputRequested.emit)
         while True:
             prompt = self._queue.get()
             if prompt is None:
@@ -71,8 +73,8 @@ class LLMWorker(QObject):
                 response = self.interface.run(prompt)
                 if prompt.find("/swap") > -1:
                     self.interface.assistant.agent_router.execution_loop.stateUpdated.disconnect(self.stateUpdated.emit)
-                    self.interface.assistant.agent_router.execution_loop.stateUpdated.connect(self.stateUpdated.emit)
                     
+
                 self.finished.emit(response)
             except Exception as e:
                 self.error.emit(str(e) + traceback.format_exc())
@@ -87,6 +89,7 @@ class MockAssistant:
 
 
 class MemoApp(QObject):
+    is_requested_input=False
     def __init__(self):
         loader = CustomUiLoader({})
         self.window = loader.load_ui(UI_DIR / "main_window.ui")
@@ -125,6 +128,7 @@ class MemoApp(QObject):
         self.worker.finished.connect(self.on_llm_response)
         self.worker.error.connect(self.on_llm_error)
         self.worker.stateUpdated.connect(self._handle_state_update)
+        self.worker.userInputRequested.connect(self._handle_input_requested)
 
     def _handle_state_update(self, state: dict):
         print("State updated:", state)
@@ -132,6 +136,15 @@ class MemoApp(QObject):
             f.write(json.dumps(state) + "\n")
         self.chat_view.typing_indicator.change_typing_message(state.get("last_checkpoint", "No message in state"))
         #self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
+    def _handle_input_requested(self,state:dict):
+        print(f"recieved dict = {state}")
+        shared_obj=backend_to_ui.get()
+        print(f"Recived thing from backend is = {shared_obj}")
+        self.is_requested_input=True
+        self.chat_view.show_typing(False)
+        self.chat_view.add_ai_message(shared_obj.get("last_question_to_user","Failed to extract request."))
+
+        
     def _load_past_conversations(self):
         conversations_list = []
         self._loaded_conversations_map = {}
@@ -246,13 +259,17 @@ class MemoApp(QObject):
             self.worker.stop()
             QApplication.quit()
             return
-
+        if self.is_requested_input:
+            self.chat_view.show_typing(True)
+            ui_to_backend.put(f"user_input= {text}")
+            self.is_requested_input=False
+        print(self.is_requested_input)
         if self.worker.is_busy():
             return
         self.chat_view.show_typing(True)
-
-        self.chat_view.add_user_message(text)
         
+        self.chat_view.add_user_message(text)
+            
         self.worker.run_prompt(text)
 
     def closeEvent(self, event):

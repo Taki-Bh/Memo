@@ -2,6 +2,27 @@ from pathlib import Path
 import subprocess
 from core.config import SUDO_PASSWORD
 
+HOME = Path.home().resolve()
+
+PROTECTED_PATHS = [
+    Path("/etc").resolve(),
+    Path("/boot").resolve(),
+    Path("/usr").resolve(),
+    Path("/bin").resolve(),
+    Path("/sbin").resolve(),
+    Path("/var").resolve(),
+    HOME / ".ssh",
+]
+def is_protected(path: str) -> bool:
+    try:
+        target = Path(path).expanduser().resolve()
+
+        return any(
+            target == protected or protected in target.parents
+            for protected in PROTECTED_PATHS
+        )
+    except Exception:
+        return True
 
 def read(path: str) -> str:
     """Read a file or list the contents of a directory."""
@@ -34,6 +55,7 @@ def exec(command: str) -> str:
     input_data = None
 
     if SUDO_PASSWORD and "sudo" in command:
+        return "Using sudo cmds isn't allowed."
         if "-S" not in command:
             actual_command = command.replace("sudo", "sudo -S", 1)
         input_data = f"{SUDO_PASSWORD}\n"

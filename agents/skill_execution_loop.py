@@ -5,7 +5,7 @@ from agents.skills_prompts import *
 from agents.skill_store import *
 from runner.runner import Runner
 from PySide6.QtCore import QObject, Signal
-
+from core.communication import backend_to_ui,ui_to_backend
 
 _FREE_TEXT_FIELDS = ("cmd", "args", "last_question_to_user")
 
@@ -88,7 +88,7 @@ def extract_unified_output(response: str):
 
 class SkillExecutionLoop(QObject):
     stateUpdated = Signal(dict)
-
+    userInputRequested=Signal(dict)
     def __init__(self, provider, tools, max_iterations: int = 20):
         super().__init__()
         self.provider = provider
@@ -158,9 +158,24 @@ class SkillExecutionLoop(QObject):
                         "response": cleaned_response,
                     }
 
+                
+                if task_state.get("status").lower()=="blocked" or task_state.get("status").lower()=="failed":
+                    return {
+                        "status": "done",
+                        "state":task_state,
+                        "response" : cleaned_response
+                    }
+                if task_state.get("status").lower()=="awaiting_user_input":
+                    backend_to_ui.put(task_state)
+
+                    self.userInputRequested.emit(task_state)
+                    user_response=ui_to_backend.get()
+                    print("Recieved the response : {user_response}")
+                    raw_response=self.provider.generate(user_response)
+                    continue
                 raw_response = self.provider.generate(
-                    "Continue the skill execution with the updated Unified Output Object"
-                )
+                                    "Continue the skill execution with the updated Unified Output Object"
+                                )
                 continue
             else:
                 s={

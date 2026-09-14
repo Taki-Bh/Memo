@@ -147,7 +147,7 @@
         </item>
         <item>
          <widget class="QLabel" name="profilePlan">
-          <property name="text"><string>Free plan</string></property>
+          <property name="text"><string>Memo Alfa</string></property>
          </widget>
         </item>
        </layout>
