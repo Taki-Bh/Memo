@@ -172,6 +172,7 @@ class SkillExecutionLoop(QObject):
                     user_response=ui_to_backend.get()
                     print("Recieved the response : {user_response}")
                     raw_response=self.provider.generate(user_response)
+                    print(f"Response = {raw_response}")
                     continue
                 raw_response = self.provider.generate(
                                     "Continue the skill execution with the updated Unified Output Object"

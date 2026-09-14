@@ -263,14 +263,15 @@ class MemoApp(QObject):
             self.chat_view.show_typing(True)
             ui_to_backend.put(f"user_input= {text}")
             self.is_requested_input=False
-        print(self.is_requested_input)
-        if self.worker.is_busy():
-            return
-        self.chat_view.show_typing(True)
-        
-        self.chat_view.add_user_message(text)
+            print(self.is_requested_input)
+        else:
+            if self.worker.is_busy():
+                return
+            self.chat_view.show_typing(True)
             
-        self.worker.run_prompt(text)
+            self.chat_view.add_user_message(text)
+                
+            self.worker.run_prompt(text)
 
     def closeEvent(self, event):
         self.worker.stop()
