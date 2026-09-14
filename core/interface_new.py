@@ -118,10 +118,10 @@ class Assistant():
         """
 
         command, prompt = CommandParser.parse(user_text)
-
+        print(f"Command = {command}")
         if command == CommandParser.AGENT_COMMAND:
             resp = self._send_to_agent(
-                
+                command,
                 prompt,
                 await_response=await_response
             )
@@ -166,12 +166,14 @@ class Assistant():
 
     def _send_to_agent(
         self,
+        command:str,
         prompt: str,
-        await_response: bool = True
+        await_response=True
+        
     ) -> str:
         """Send an explicit agent request to the agent router."""
 
-        return self.agent_router.handleRequest(prompt)
+        return self.agent_router.handleRequest(command,prompt)
 
 
 class TerminalInterface:

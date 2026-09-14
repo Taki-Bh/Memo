@@ -7,6 +7,7 @@ class CommandParser:
     TITLE_COMMAND = "/title"
     COMPUTER_COMMAND = "/computer"
     PDF_COMMAND = "/pdf"
+    
 
     @classmethod
     def parse(cls, text: str) -> tuple[str | None, str]:
@@ -32,5 +33,8 @@ class CommandParser:
         if text.startswith(cls.SAVE_COMMAND):
             filename = text[len(cls.SAVE_COMMAND):].strip()
             return cls.SAVE_COMMAND, filename
+        if text.startswith(cls.COMPUTER_COMMAND):
+            filename=text[len(cls.COMPUTER_COMMAND):].strip()
+            return cls.COMPUTER_COMMAND, filename
 
         return None, text

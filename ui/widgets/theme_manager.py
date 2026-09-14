@@ -93,6 +93,11 @@ THEMES = {
         "file": "theme_after_dark.qss",
         "swatch": [QColor("#0b0613"), QColor("#1a0f2e"), QColor("#ff79c6")],
     },
+    "fazbear_frights": {
+        "label": "Fazbear Frights (Horror Attraction)",
+        "file": "theme_fazbear_frights.qss",
+        "swatch": [QColor("#080608"), QColor("#120D10"), QColor("#C8102E")],
+    },
 }
 
 

@@ -94,7 +94,7 @@ class SkillExecutionLoop(QObject):
         self.provider = provider
         self.tools = tools
         self.max_iterations = max_iterations
-
+    
     def execute(
         self,
         skill_name: str,
