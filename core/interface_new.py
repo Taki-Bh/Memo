@@ -143,7 +143,7 @@ class Assistant():
             return self.save_conversation(prompt)
 
         return self._send_to_llm(
-            prompt+'(Return your message in a JSON format of {"message": "your message here"})',
+            prompt+'\n(Return your message in a JSON format of {"message": "your message here"})',
             await_response=await_response
         )
 

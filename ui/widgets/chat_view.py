@@ -64,6 +64,16 @@ class ChatView(QWidget):
         self._has_messages = False
         self._internal_change = False
 
+        # Auto-scroll: any time the scroll range changes (a message is added,
+        # the typing indicator appears, content is cleared, etc.) snap to the
+        # bottom. This covers every content-changing path automatically,
+        # instead of relying on each method to remember to call
+        # _scroll_to_bottom itself.
+        self._autoscroll = True
+        scroll_bar = self.ui.messageScrollArea.verticalScrollBar()
+        scroll_bar.rangeChanged.connect(self._on_scroll_range_changed)
+        scroll_bar.valueChanged.connect(self._on_scroll_value_changed)
+
     def _on_model_changed(self, text: str):
         if self._internal_change:
             return
@@ -136,19 +146,21 @@ class ChatView(QWidget):
     def _insert_message(self, message: ChatMessage):
         index = self._messages_layout.indexOf(self.typing_indicator)
         self._messages_layout.insertWidget(index, message)
+        self._autoscroll = True
         QTimer.singleShot(0, self._scroll_to_bottom)
 
     def _ensure_conversation_started(self):
         if not self._has_messages:
             self._has_messages = True
             self.empty_state.hide()
-    
+
     def show_typing(self, show: bool):
         self.composer.set_enabled_state(not show)
         if show:
             self.typing_indicator.start()
         else:
             self.typing_indicator.stop()
+        self._autoscroll = True
         QTimer.singleShot(0, self._scroll_to_bottom)
 
     def clear_conversation(self):
@@ -161,6 +173,21 @@ class ChatView(QWidget):
             widget.deleteLater()
         self._has_messages = False
         self.empty_state.show()
+
+    # ------------------------------------------------------------------
+    # Scrolling
+    # ------------------------------------------------------------------
+    def _on_scroll_range_changed(self, _min: int, _max: int):
+        # Fires whenever the content height changes (new message, typing
+        # indicator toggled, etc.). Snap to the bottom automatically.
+        if self._autoscroll:
+            QTimer.singleShot(0, self._scroll_to_bottom)
+
+    def _on_scroll_value_changed(self, value: int):
+        # If the user manually scrolls up to read history, stop
+        # auto-scrolling until they're back at (or near) the bottom.
+        bar = self.ui.messageScrollArea.verticalScrollBar()
+        self._autoscroll = value >= bar.maximum() - 4
 
     def _scroll_to_bottom(self):
         bar = self.ui.messageScrollArea.verticalScrollBar()
