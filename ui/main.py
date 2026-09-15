@@ -17,7 +17,7 @@ from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
 from core.communication import ui_to_backend,backend_to_ui
 from core.interface_new import GUIInterface
-
+from utilities.utilities import get_conversations
 ROOT_DIR = Path(__file__).resolve().parent
 if (ROOT_DIR.parent / "memory").exists() and not (ROOT_DIR / "memory").exists():
     PROJECT_ROOT = ROOT_DIR.parent
@@ -146,51 +146,9 @@ class MemoApp(QObject):
 
         
     def _load_past_conversations(self):
-        conversations_list = []
         self._loaded_conversations_map = {}
 
-        now = datetime.now()
-        conversations_file = MEMORY_DIR / "conversations.json"
-
-        try:
-            with open(conversations_file, "rt") as f:
-                conversations = json.load(f)
-                data = conversations.get("entities", [])
-
-                for i, entity in enumerate(data):
-                    title = entity.get("name", "Untitled Conversation")
-                    date_str = entity.get("date", now.isoformat())
-                    convs = entity.get("messages", [])
-
-                    try:
-                        dt = datetime.fromisoformat(date_str)
-                    except Exception:
-                        dt = now
-
-                    delta_days = (now.date() - dt.date()).days
-
-                    if delta_days == 0:
-                        group = "Today"
-                    elif delta_days == 1:
-                        group = "Yesterday"
-                    elif delta_days <= 7:
-                        group = "Previous 7 Days"
-                    else:
-                        group = "Older"
-
-                    conv_id = str(i)
-                    self._loaded_conversations_map[conv_id] = convs
-
-                    conversations_list.append({
-                        "id": conv_id,
-                        "title": title,
-                        "group": group,
-                        "icon": "💬"
-                    })
-
-        except Exception as e:
-            print(f"Error loading conversation file: {e}")
-
+        conversations_list,self._loaded_conversations_map=get_conversations()
         if not conversations_list:
             conversations_list = [
                 {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "🧳"},

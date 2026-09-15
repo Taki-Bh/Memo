@@ -1849,6 +1849,28 @@
           "content": "Modular Skill Router Update"
         }
       ]
+    },
+    {
+      "name": "Morning Greeting Session",
+      "date": "2026-09-15T09:23:11.830553",
+      "messages": [
+        {
+          "role": "user",
+          "content": "good morning\n(Return your message in a JSON format of {\"message\": \"your message here\"})"
+        },
+        {
+          "role": "llm",
+          "content": "JSON{\"message\": \"Good morning! How can I help you today?\"}\n"
+        },
+        {
+          "role": "user",
+          "content": "Based on the conversation so far, suggest a short, descriptive, concise entity name/title (maximum 5 words, no quotes, no punctuation at the end). Return ONLY the name."
+        },
+        {
+          "role": "llm",
+          "content": "Morning Greeting Session"
+        }
+      ]
     }
   ]
 }
