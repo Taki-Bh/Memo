@@ -28,6 +28,7 @@ else:
 
 MEMORY_DIR = PROJECT_ROOT / "memory"
 def get_conversations():
+            
             conversations_list = []
             _loaded_conversations_map = {}
 

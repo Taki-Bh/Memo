@@ -2,14 +2,24 @@ from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import (
+    Qt,
+    QTimer,
+    Signal,
+    QPoint,
+    QPropertyAnimation,
+    QParallelAnimationGroup,
+    QEasingCurve,
+)
+
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
+    QGraphicsOpacityEffect,
 )
-
 from ui.widgets.chat_message import ChatMessage
 from ui.widgets.composer import Composer
 from ui.widgets.glass_button import GlassButton
@@ -25,7 +35,40 @@ SUGGESTIONS = [
     ("🧠", "Help me brainstorm"),
 ]
 
+def animate_in(widget: QWidget, target_pos: QPoint):
+    # Starting position: shifted down/right by the widget's size
+    start_pos = target_pos + QPoint(
+        0,
+        widget.height()
+    )
 
+    # Opacity effect
+    opacity_effect = QGraphicsOpacityEffect(widget)
+    widget.setGraphicsEffect(opacity_effect)
+
+    # Position animation
+    pos_anim = QPropertyAnimation(widget, b"pos")
+    pos_anim.setDuration(500)
+    pos_anim.setStartValue(start_pos)
+    pos_anim.setEndValue(target_pos)
+    pos_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+    # Opacity animation
+    opacity_anim = QPropertyAnimation(opacity_effect, b"opacity")
+    opacity_anim.setDuration(500)
+    opacity_anim.setStartValue(0.0)
+    opacity_anim.setEndValue(1.0)
+    opacity_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+    # Run both simultaneously
+    group = QParallelAnimationGroup(widget)
+    group.addAnimation(pos_anim)
+    group.addAnimation(opacity_anim)
+
+    # Keep reference alive
+    widget._animation = group
+
+    group.start()
 class ChatView(QWidget):
     messageSent = Signal(str)
     suggestionActivated = Signal(str)
@@ -136,11 +179,14 @@ class ChatView(QWidget):
         self._ensure_conversation_started()
         message = ChatMessage("user", text, timestamp=_now())
         self._insert_message(message)
+        QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
+        
 
     def add_ai_message(self, text: str) -> ChatMessage:
         self._ensure_conversation_started()
         message = ChatMessage("ai", text, timestamp=_now())
         self._insert_message(message)
+        QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
         return message
 
     def _insert_message(self, message: ChatMessage):
@@ -153,15 +199,17 @@ class ChatView(QWidget):
         if not self._has_messages:
             self._has_messages = True
             self.empty_state.hide()
-
+    def _show_typing(self,show:bool):
+            self.composer.set_enabled_state(not show)
+            if show:
+                self.typing_indicator.start()
+            else:
+                self.typing_indicator.stop()
+            self._autoscroll = True
+            QTimer.singleShot(0, self._scroll_to_bottom)    
     def show_typing(self, show: bool):
-        self.composer.set_enabled_state(not show)
-        if show:
-            self.typing_indicator.start()
-        else:
-            self.typing_indicator.stop()
-        self._autoscroll = True
-        QTimer.singleShot(0, self._scroll_to_bottom)
+
+        QTimer.singleShot(500,lambda : self._show_typing(show))
 
     def clear_conversation(self):
         for i in reversed(range(self._messages_layout.count())):
