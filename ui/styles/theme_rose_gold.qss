@@ -447,3 +447,11 @@ QSplitter::handle {
 #FilesDialog {
     background-color: #2A1B1E;
 }
+
+
+/* ---------------------------------------------------------------------
+   Tools Dialog
+   --------------------------------------------------------------------- */
+#ToolsDialog {
+    background-color: #2A1B1E;
+}
