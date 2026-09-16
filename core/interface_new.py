@@ -158,8 +158,10 @@ class Assistant():
             await_response=await_response
         )
         try:
-            
-            parsed_response=json.loads(raw[raw.find("{"):])
+            cleanraw=raw[raw.find("{"):]
+            if cleanraw[len(cleanraw)-1]=="\"":
+                cleanraw=cleanraw+"}"
+            parsed_response=json.loads(cleanraw)
             return parsed_response.get("message", "No message returned from LLM.")
         except json.JSONDecodeError:
             return raw + traceback.format_exc() + "\n[Error] LLM returned invalid JSON. Please ensure the LLM returns a valid JSON response."

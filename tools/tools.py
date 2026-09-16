@@ -100,13 +100,16 @@ def exec(command: str) -> str:
     return final_output
 
 
-def screenshot() -> str:
-    """Take a screenshot, save it to a file, and return it as a base64 encoded text."""
+def screenshot(resolution_height: int = 600, resolution_width: int = 800) -> str:
+    """Take a screenshot, resize it, save it as JPEG, and return it as a base64 encoded text."""
     try:
         im = ImageGrab.grab()
-        im.save("screenshot.png", format="PNG")
+        im = im.resize((resolution_width, resolution_height))
+        if im.mode != "RGB":
+            im = im.convert("RGB")
+        im.save("screenshot.jpg", format="JPEG")
         buffered = io.BytesIO()
-        im.save(buffered, format="PNG")
+        im.save(buffered, format="JPEG")
         return base64.b64encode(buffered.getvalue()).decode("utf-8")
     except Exception as e:
         return f"Error taking screenshot: {e}"
@@ -125,7 +128,17 @@ TOOLS_DEFINITIONS = [
             "description": "Take a screenshot and return it as a base64 encoded text.",
             "parameters": {
                 "type": "object",
-                "properties": {},
+                "properties": {
+                    "resolution_height": {
+                        "type": "integer",
+                        "description": "Resolution height"
+                    },
+                    "resolution_width": {
+                        "type": "integer",
+                        "description": "Resolution width"
+                    }
+                },
+                "required": [],
                 "additionalProperties": False,
             },
         },
