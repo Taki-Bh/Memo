@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication, QVBoxLayout
 from ui.widgets.chat_view import ChatView
 from ui.widgets.preferences_dialog import PreferencesDialog
 from ui.widgets.files_dialog import FilesDialog
+from ui.widgets.tools_dialog import ToolsDialog
 from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
@@ -194,6 +195,9 @@ class MemoApp(QObject):
         if name == "attachments" or name == "files":
             self._open_files()
             return
+        if name == "tools":
+            self._open_tools()
+            return
         print(f"[utility] {name} clicked")
 
     def _open_preferences(self):
@@ -203,6 +207,10 @@ class MemoApp(QObject):
 
     def _open_files(self):
         dialog = FilesDialog(self.window)
+        dialog.exec()
+
+    def _open_tools(self):
+        dialog = ToolsDialog(self.window)
         dialog.exec()
 
     def _on_theme_changed(self, key: str):

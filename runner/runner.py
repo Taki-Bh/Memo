@@ -1,5 +1,5 @@
 from typing import Any
-from tools.tools import read, write, exec
+from tools.tools import read, write, exec,screenshot
 
 
 class Runner:
@@ -15,3 +15,5 @@ class Runner:
     def write(path,text):
         
         return write(path,text)
+    def screenshot():
+        return screenshot()

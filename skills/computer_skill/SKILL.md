@@ -20,6 +20,7 @@ The computer skill may use these tools when they are registered and available:
 - `read` — inspect a file .
 - `write` — create or modify a text file.
 - `exec` — execute a shell command.
+- `screenshot` — takes a screenshot.
 
 Only use tools that are actually available in the current runtime.
 
@@ -41,6 +42,7 @@ Use the simplest tool capable of completing the task.
 - Reading a file → `read`
 - Creating or modifying a text file → `write`
 - Running a command or program → `exec`
+- Seeing the current screen / Taking a screenshot → `screenshot`
 
 Do not use `exec` when another available tool is sufficient.
 

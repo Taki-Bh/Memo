@@ -121,8 +121,25 @@ class SkillExecutionLoop(QObject):
 
             if call is None and task_state is None:
                 nudge = (
-                    "You forgot to return the Unified Output Object "
-                    '({"call": ..., "task_state": ...}). Return it now.'
+                    "You forgot to return the Unified Output Object or returned it in the wrong format! "
+                    "EXAMPLE SCHEMA:\n\n"
+                    "```json\n"
+                    "{\n"
+                    '  "call": {"op_name": "write|read|write", "args": "path/to/file || content"},\n'
+                    '  "task_state": {\n'
+                    '    "last_checkpoint": "Writing Output File",\n'
+                    '    "status": "in_progress|done",\n'
+                    '    "last_question_to_user": null,\n'
+                    '    "remaining_work": ["placeholder"],\n'
+                    '    "context": {}\n'
+                    "  }\n"
+                    "}\n"
+                    "```\n\n"
+                    "({" 
+                    '"call": "exec|read|write", '
+                    '"task_state": ...'
+                    "})\n"
+                    "Return it now."
                 )
                 raw_response = self.provider.generate(nudge)
                 call, task_state, cleaned_response = extract_unified_output(raw_response)
@@ -152,6 +169,12 @@ class SkillExecutionLoop(QObject):
                 
 
                 if task_state.get("status") == "done":
+                    if iteration==0:
+                        raw_response = self.provider.generate(
+                                            f"You are not to return Done at the start of skill execution. "
+                                            "You are to perform the required task as it is not performed yet. "
+                                            
+                                    )
                     return {
                         "status": "done",
                         "state": task_state,
@@ -208,6 +231,8 @@ class SkillExecutionLoop(QObject):
             return Runner.write(args[:sep_index-1], args[sep_index + 3:])
         if name == "read":
             return Runner.read(args)
+        if name == "screenshot":
+                return "[THIS A BASE 64 ENCRYPTED IMAGE]"+Runner.screenshot()+"[END OF BASE 64 ENCRYPTED IMAGE]"
 
     def _update_prompt_state(self, state, call, result):
         state = dict(state or {})

@@ -140,6 +140,7 @@ Available operations:
 - `read(path)` — read a file
 - `write(path, content)` — write a file
 - `exec(command)` — execute a shell command
+- `screenshot()` - takes a screenshot of screen
 
 The Runner is real and executable. It is NOT documentation or an example.
 
@@ -165,7 +166,7 @@ always be present.
 ```json
 {
   "call": {
-    "op_name": "read|write|exec",
+    "op_name": "read|write|exec|screenshot",
     "args": "arguments of read/write in succession separated by space(respetively '||' for write)",
     "cmd": "complete bash command"
   },
@@ -240,6 +241,19 @@ Exec, awaiting user input next:
     "status": "awaiting_user_input",
     "last_question_to_user": "Which file should I use?",
     "remaining_work": ["select target file", "process it"],
+    "context": {}
+  }
+}
+```
+Screenshot, task still in progress:
+```json
+{
+  "call": {"op_name": "screenshot"},
+  "task_state": {
+    "last_checkpoint": "Taking a screenshot",
+    "status": "in_progress",
+    "last_question_to_user": null,
+    "remaining_work": ["process screenshot],
     "context": {}
   }
 }

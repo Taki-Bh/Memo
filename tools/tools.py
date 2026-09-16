@@ -1,3 +1,6 @@
+import base64
+import io
+from PIL import ImageGrab
 from pathlib import Path 
 import subprocess
 from core.config import SUDO_PASSWORD
@@ -96,12 +99,38 @@ def exec(command: str) -> str:
 
     return final_output
 
+
+def screenshot() -> str:
+    """Take a screenshot, save it to a file, and return it as a base64 encoded text."""
+    try:
+        im = ImageGrab.grab()
+        im.save("screenshot.png", format="PNG")
+        buffered = io.BytesIO()
+        im.save(buffered, format="PNG")
+        return base64.b64encode(buffered.getvalue()).decode("utf-8")
+    except Exception as e:
+        return f"Error taking screenshot: {e}"
+
 TOOLS = {
     "read": read,
     "write": write,
     "exec": exec,
+    "screenshot": screenshot,
 }
 TOOLS_DEFINITIONS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "screenshot",
+            "description": "Take a screenshot and return it as a base64 encoded text.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+        },
+    },
+
     {
         "type": "function",
         "function": {
