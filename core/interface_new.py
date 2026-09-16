@@ -25,6 +25,7 @@ class Assistant():
         self.context = LLMContext("", "", {}, [])
         self.conversation_name = "Untitled Entity"
         self.conversation_date = datetime.now().isoformat()
+        self.conversation_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Provider automatically chooses its available mode.
         self.llm = GeminiProvider(self.context)
@@ -77,6 +78,7 @@ class Assistant():
         target = Path(filename) if filename else Path("memory/conversations.json")
 
         new_entity = {
+            "id": self.conversation_id,
             "name": self.conversation_name,
             "date": self.conversation_date,
             "messages": [{"role": role, "content": content} for role, content in self.context.messages]
