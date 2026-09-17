@@ -52,16 +52,13 @@ def write(path: str, content: str) -> str:
     return f"Successfully wrote to {path}"
 
 
-def exec(command: str) -> str:
+def exec(command: str, enable_timeout: bool = True) -> str:
     """Execute a shell command and return its output (including errors)."""
     actual_command = command
     input_data = None
-
+    disable_timeout=command.find("install") or command.find("curl")
     if SUDO_PASSWORD and "sudo" in command:
         return "Using sudo cmds isn't allowed."
-        if "-S" not in command:
-            actual_command = command.replace("sudo", "sudo -S", 1)
-        input_data = f"{SUDO_PASSWORD}\n"
 
     try:
         result = subprocess.run(
@@ -69,7 +66,7 @@ def exec(command: str) -> str:
             shell=True,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=30 if (not disable_timeout) else None,
             input=input_data,
         )
 
@@ -198,6 +195,10 @@ TOOLS_DEFINITIONS = [
                     "command": {
                         "type": "string",
                         "description": "The shell command to execute."
+                    },
+                    "enable_timeout": {
+                        "type": "boolean",
+                        "description": "Whether to enable timeout for the command."
                     }
                 },
                 "required": ["command"],

@@ -52,25 +52,36 @@ class GeminiPage(LLMPage):
             print(f"Prompt length mismatch: {len(prompt_input_text)} vs {len(prompt)}")
             print(f"Prompt input text: {prompt_input_text}")
             print(f"Original prompt: {prompt}")
+            batches=[]
             while True:
                 
-                text_header=f"You are recieving a file in batches [batch {i}]:\nYou will recieve ---------END OF BATCHES-------- when all batches are sent:\n(Refrain from return a call/state block until the batches are done/ any call/state block will be ignored) :\n"
+                text_header=f" [batch {i}]:\n"
                 text_batch_size=len(prompt_input_text)-len(text_header)
                 text_batch=text_header+prompt[i*text_batch_size:min((i+1)*text_batch_size,len(prompt))]
+                batches.append(text_batch)
                 
-                prompt_input.fill(text_batch)
-                time.sleep(0.5)
-                
-                self.page.locator(self.SUBMIT_SELECTOR).click()
-                
-                self.get_latest_response(timeout_ms=1000, await_response=False)
                 if (i+1)*text_batch_size>=len(prompt):
-                    prompt_input.fill("---------END OF BATCHES--------PROCEED TO EXECUTE APPROPRIATE ACTION WITH CALL/STATE")
-                    self.page.locator(self.SUBMIT_SELECTOR).click()
-                    self.get_latest_response(timeout_ms=1000, await_response=False)
+
                     break
                 
                 i+=1
+            prompt_input.fill(f"Output of tool is too long, You will be recieving its output {len(batches)} batches ")
+            time.sleep(0.5)
+                            
+            self.page.locator(self.SUBMIT_SELECTOR).click()
+            self.get_latest_response(timeout_ms=1000, await_response=False)
+            for batch in batches:
+                prompt_input.fill(batch)
+                time.sleep(0.5)
+                            
+                self.page.locator(self.SUBMIT_SELECTOR).click()
+                            
+                self.get_latest_response(timeout_ms=1000, await_response=False)
+
+            prompt_input.fill("---------END OF BATCHES--------PROCEED TO EXECUTE APPROPRIATE ACTION WITH CALL/STATE")
+            self.page.locator(self.SUBMIT_SELECTOR).click()
+            self.get_latest_response(timeout_ms=1000, await_response=False)
+
           # Allow time for the input to register
         else:
             time.sleep(0.5)

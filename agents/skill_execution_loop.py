@@ -125,9 +125,9 @@ class SkillExecutionLoop(QObject):
                     "EXAMPLE SCHEMA:\n\n"
                     "```json\n"
                     "{\n"
-                    '  "call": {"op_name": "write|read|write", "args": "path/to/file || content"},\n'
+                    '  "call": {"op_name": "write|read|write|", "args": "placeholder"},\n'
                     '  "task_state": {\n'
-                    '    "last_checkpoint": "Writing Output File",\n'
+                    '    "last_checkpoint": "placeholder",\n'
                     '    "status": "in_progress|done",\n'
                     '    "last_question_to_user": null,\n'
                     '    "remaining_work": ["placeholder"],\n'
@@ -139,7 +139,7 @@ class SkillExecutionLoop(QObject):
                     '"call": "exec|read|write", '
                     '"task_state": ...'
                     "})\n"
-                    "Return it now."
+                    "if the verdict of the status is done leave the call block set to null\n Original user prompt was :"+user_prompt+"last state"+str(current_state)
                 )
                 raw_response = self.provider.generate(nudge)
                 call, task_state, cleaned_response = extract_unified_output(raw_response)

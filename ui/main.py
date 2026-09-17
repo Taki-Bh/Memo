@@ -74,7 +74,8 @@ class LLMWorker(QObject):
                 response = self.interface.run(prompt)
                 if prompt.find("/swap") > -1:
                     self.interface.assistant.agent_router.execution_loop.stateUpdated.disconnect(self.stateUpdated.emit)
-                    
+                    self.interface.assistant.agent_router.execution_loop.userInputRequested.disconnect(self.userInputRequested.emit)
+
 
                 self.finished.emit(response)
             except Exception as e:
