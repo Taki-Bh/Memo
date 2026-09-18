@@ -158,7 +158,7 @@ class GeminiPage(LLMPage):
                             else:
                                 old_msg=msg
                                 idle_counter=0
-                            if idle_counter>MSG_TIMEOUT*60 and msg=="" :
+                            if t>MSG_TIMEOUT*60 and msg=="" :
                                 return None
                             if msg !="" and idle_counter>MSG_CHECK_DUR*60:
                                 #print(f"Assistant said: {msg}")
@@ -169,7 +169,7 @@ class GeminiPage(LLMPage):
 
                         time.sleep(0.016)
                         t+=0.016
-                        #print(f"elapsed time={t}")
+                        print(f"elapsed time={t}, msg={msg}, idlecounter={idle_counter}")
 
 
 

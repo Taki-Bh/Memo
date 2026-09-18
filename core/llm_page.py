@@ -7,8 +7,8 @@ from core.streaming import *
 import json
 from bs4 import BeautifulSoup
 
-
-
+import time
+from core.exceptions import BrowserConnectionError
 import html
 import json
 import queue
@@ -71,8 +71,20 @@ class LLMPage:
 
         # ✅ Register listener BEFORE opening the page
         self.page.on("response", self.handle_response)
+        for i in range(3):
+            try:
+                self._open()
+                i=0
+                break
+            except BrowserConnectionError as e:
+                print(e)
+                print("Retrying in 5 secs... attempt = [",i+2/2,"]")
+                time.sleep(5)
+        if i>0:
+            raise BrowserConnectionError (f"Failed to connect to {self.URL} ")
+        
 
-        self._open()
+
 
     @property
     def page(self):
@@ -85,7 +97,7 @@ class LLMPage:
         try:
             self.browser.goto(self.URL, timeout=60000)
         except Exception as err:
-            raise RuntimeError(f"Failed to connect to {self.URL}: {err}")
+            raise BrowserConnectionError(f"Failed to connect to {self.URL}: {err}")
 
     def _clear_queue(self):
         """Purges old or orphaned responses to avoid race conditions."""

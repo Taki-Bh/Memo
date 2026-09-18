@@ -13,8 +13,10 @@ class LLMBrowserProvider(LLMProvider):
 
     def generate(self, prompt: str,await_response=True) -> str:
         self.append_to_context(("user", prompt))
-
-        self.page.send_message(prompt)
+        try:
+            self.page.send_message(prompt)
+        except Exception as e:
+            raise LLMRequestError("Failed to send msg : ",e)
         
         response = self.page.get_latest_response(await_response=await_response)
        

@@ -51,3 +51,6 @@ class UnrecognizedMessageFormat(LLMException):
     """Raised when a message anomaly appears in the DOM"""
 
     pass
+class BrowserConnectionError(AppException):
+
+    pass

@@ -56,7 +56,7 @@ def exec(command: str, enable_timeout: bool = True) -> str:
     """Execute a shell command and return its output (including errors)."""
     actual_command = command
     input_data = None
-    disable_timeout=command.find("install") or command.find("curl")
+    disable_timeout=command.find("install")>-1 or command.find("curl")>-1
     if SUDO_PASSWORD and "sudo" in command:
         return "Using sudo cmds isn't allowed."
 

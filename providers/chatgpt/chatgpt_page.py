@@ -50,13 +50,13 @@ class ChatGPTPage(LLMPage):
                             idle_counter=0
                         if idle_counter>MSG_TIMEOUT*60 and msg=="" :
                             return None
-                        if msg !="" and idle_counter>MSG_CHECK_DUR*120:
+                        if msg !="" and idle_counter>MSG_CHECK_DUR*60:
                             #print(f"Assistant said: {msg}")
                             #input()
                             return msg
                     time.sleep(0.016)
                     t+=0.016
-                    #print(f"elapsed time={t}")
+                    print(f"elapsed time={t}")
                         
                     
 
