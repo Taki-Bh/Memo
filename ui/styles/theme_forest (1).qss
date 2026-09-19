@@ -455,3 +455,8 @@ QSplitter::handle {
 #ToolsDialog {
     background-color: #0E1710;
 }
+
+QMenu {
+    background-color: #0E1710;
+    border: 1px solid black;
+}
