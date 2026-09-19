@@ -96,7 +96,7 @@ class LLMPage:
     def _open(self):
         try:
             self.browser.goto(self.URL, timeout=60000)
-        except Exception as err:
+        except ConnectionError as err:
             raise BrowserConnectionError(f"Failed to connect to {self.URL}: {err}")
 
     def _clear_queue(self):

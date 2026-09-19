@@ -175,18 +175,20 @@ class ChatView(QWidget):
     def _on_message_sent(self, text: str):
         self.messageSent.emit(text)
 
-    def add_user_message(self, text: str):
+    def add_user_message(self, text: str,animate = True):
         self._ensure_conversation_started()
         message = ChatMessage("user", text, timestamp=_now())
         self._insert_message(message)
-        QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
+        if animate:
+            QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
         
 
-    def add_ai_message(self, text: str) -> ChatMessage:
+    def add_ai_message(self, text: str,animate = True) -> ChatMessage:
         self._ensure_conversation_started()
         message = ChatMessage("ai", text, timestamp=_now())
         self._insert_message(message)
-        QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
+        if animate:
+            QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
         return message
 
     def _insert_message(self, message: ChatMessage):

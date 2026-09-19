@@ -173,16 +173,24 @@ class MemoApp(QObject):
 
     def _on_conversation_selected(self, conversation_id: str):
         self._active_conversation = conversation_id
+        print(conversation_id)
         self.chat_view.clear_conversation()
+        
         if conversation_id in self._loaded_conversations_map:
+            print(conversation_id)
             convs = self._loaded_conversations_map[conversation_id]
+            print(conversation_id)
             for msg in convs:
+                
                 role = msg.get("role")
+                print(role)
+               
                 content = msg.get("content", "")
+                print(content[:20]+"...")
                 if role == "user":
-                    self.chat_view.add_user_message(content)
+                    self.chat_view.add_user_message(content,animate=False)
                 else:
-                    self.chat_view.add_ai_message(content)
+                    self.chat_view.add_ai_message(content,animate=False)
 
     def _on_new_conversation(self):
         self.chat_view.clear_conversation()

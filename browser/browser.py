@@ -83,6 +83,7 @@ class Browser:
             self.page.wait_for_load_state("load")
             print("dom content loaded!")
         except Exception as e:
+            print("Caught an exception")
             raise ConnectionError (e)
 
     def back(self):

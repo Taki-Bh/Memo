@@ -107,6 +107,7 @@ class Sidebar(QWidget):
         self._list_layout.addItem(self._tail_spacer)
 
     def _on_item_clicked(self, conversation_id: str):
+        print(conversation_id)
         self.select_conversation(conversation_id)
         self.conversationSelected.emit(conversation_id)
 

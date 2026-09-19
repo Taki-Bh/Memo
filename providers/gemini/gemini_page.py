@@ -169,7 +169,7 @@ class GeminiPage(LLMPage):
 
 
                         time.sleep(0.016)
-                        t+=0.016
+                        t+=0.032
                         print(f"elapsed time={t}, msg={msg}, idlecounter={idle_counter}")
 
 
