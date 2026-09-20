@@ -68,6 +68,15 @@ class Sidebar(QWidget):
         self._conversations = conversations
         self._rebuild()
 
+    def rename_conversation(self, conversation_id: str, new_title: str):
+        for conv in self._conversations:
+            if conv["id"] == conversation_id:
+                conv["title"] = new_title
+                break
+        item = self._items.get(conversation_id)
+        if item:
+            item.title_label.setText(new_title)
+
     def select_conversation(self, conversation_id: str):
         for cid, item in self._items.items():
             item.set_selected(cid == conversation_id)

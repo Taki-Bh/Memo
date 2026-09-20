@@ -7,7 +7,7 @@ import json
 import traceback
 from datetime import datetime
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QApplication, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QInputDialog
 
 from ui.widgets.chat_view import ChatView
 from ui.widgets.preferences_dialog import PreferencesDialog
@@ -16,7 +16,7 @@ from ui.widgets.tools_dialog import ToolsDialog
 from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
-from core.communication import ui_to_backend,backend_to_ui
+from core.communication import ui_to_backend, backend_to_ui
 from core.interface_new import GUIInterface
 from utilities.utilities import get_conversations
 ROOT_DIR = Path(__file__).resolve().parent
@@ -37,7 +37,7 @@ class LLMWorker(QObject):
     finished = Signal(str)
     error = Signal(str)
     stateUpdated = Signal(dict)
-    userInputRequested=Signal(dict)
+    userInputRequested = Signal(dict)
     def __init__(self):
         super().__init__()
         self.interface = None
@@ -55,6 +55,10 @@ class LLMWorker(QObject):
 
     def stop(self):
         self._queue.put(None)
+
+    def wait(self, timeout: float | None = None):
+        if self._thread.is_alive():
+            self._thread.join(timeout)
 
     def _loop(self):
         self.interface = GUIInterface()
@@ -76,7 +80,6 @@ class LLMWorker(QObject):
                     self.interface.assistant.agent_router.execution_loop.stateUpdated.disconnect(self.stateUpdated.emit)
                     self.interface.assistant.agent_router.execution_loop.userInputRequested.disconnect(self.userInputRequested.emit)
 
-
                 self.finished.emit(response)
             except Exception as e:
                 self.error.emit(str(e) + traceback.format_exc())
@@ -91,7 +94,7 @@ class MockAssistant:
 
 
 class MemoApp(QObject):
-    is_requested_input=False
+    is_requested_input = False
     def __init__(self):
         loader = CustomUiLoader({})
         self.window = loader.load_ui(UI_DIR / "main_window.ui")
@@ -122,6 +125,7 @@ class MemoApp(QObject):
         self.sidebar.conversationSelected.connect(self._on_conversation_selected)
         self.sidebar.newConversationRequested.connect(self._on_new_conversation)
         self.sidebar.utilityActivated.connect(self._on_utility_activated)
+        self.sidebar.conversationRenamed.connect(self._on_conversation_renamed)
 
         self.chat_view.messageSent.connect(self._on_message_sent)
         self.chat_view.suggestionActivated.connect(self._on_suggestion_activated)
@@ -132,33 +136,44 @@ class MemoApp(QObject):
         self.worker.stateUpdated.connect(self._handle_state_update)
         self.worker.userInputRequested.connect(self._handle_input_requested)
 
-    def _handle_state_update(self, state: dict):
-        print("State updated:", state)
-        with open("state_log.net", "a") as f:
-            f.write(json.dumps(state) + "\n")
-        self.chat_view.typing_indicator.change_typing_message(state.get("last_checkpoint", "No message in state"))
-        #self.chat_view.add_ai_message(state.get("last_checkpoint", "No message in state"))
-    def _handle_input_requested(self,state:dict):
-        print(f"recieved dict = {state}")
-        shared_obj=backend_to_ui.get()
-        print(f"Recived thing from backend is = {shared_obj}")
-        self.is_requested_input=True
-        self.chat_view.show_typing(False)
-        self.chat_view.add_ai_message(shared_obj.get("last_question_to_user","Failed to extract request."))
+    def _on_conversation_renamed(self, conversation_id: str):
+        new_title, ok = QInputDialog.getText(self.window, "Rename Conversation", "Enter new title:")
+        if ok and new_title.strip():
+            self.sidebar.rename_conversation(conversation_id, new_title.strip())
 
-        
+    def _handle_state_update(self, state: dict):
+        if not isinstance(state, dict):
+            state = {"last_checkpoint": str(state)}
+
+        print("State updated:", state)
+
+        with open(PROJECT_ROOT / "state_log.net", "a", encoding="utf-8") as f:
+            f.write(json.dumps(state, ensure_ascii=False) + "\n")
+
+        self.chat_view.typing_indicator.change_typing_message(
+            state.get("last_checkpoint", "No message in state")
+        )
+
+    def _handle_input_requested(self, state: dict):
+        print(f"recieved dict = {state}")
+        shared_obj = backend_to_ui.get()
+        print(f"Recived thing from backend is = {shared_obj}")
+        self.is_requested_input = True
+        self.chat_view.show_typing(False)
+        self.chat_view.add_ai_message(shared_obj.get("last_question_to_user", "Failed to extract request."))
+
     def _load_past_conversations(self):
         self._loaded_conversations_map = {}
 
-        conversations_list,self._loaded_conversations_map=get_conversations()
+        conversations_list, self._loaded_conversations_map = get_conversations()
         if not conversations_list:
             conversations_list = [
-                {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "🧳"},
-                {"id": "c2", "title": "Refactor auth module", "group": "Today", "icon": "🛠️"},
-                {"id": "c3", "title": "Weekly meal ideas", "group": "Yesterday", "icon": "🍲"},
-                {"id": "c4", "title": "Explaining quantum tunneling", "group": "Previous 7 Days", "icon": "⚛️"},
-                {"id": "c5", "title": "Resume feedback", "group": "Previous 7 Days", "icon": "📄"},
-                {"id": "c6", "title": "First conversation", "group": "Older", "icon": "💬"},
+                {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "ð§³"},
+                {"id": "c2", "title": "Refactor auth module", "group": "Today", "icon": "ð ï¸"},
+                {"id": "c3", "title": "Weekly meal ideas", "group": "Yesterday", "icon": "ð²"},
+                {"id": "c4", "title": "Explaining quantum tunneling", "group": "Previous 7 Days", "icon": "âï¸"},
+                {"id": "c5", "title": "Resume feedback", "group": "Previous 7 Days", "icon": "ð"},
+                {"id": "c6", "title": "First conversation", "group": "Older", "icon": "ð¬"},
             ]
             for c in conversations_list:
                 self._loaded_conversations_map[c["id"]] = []
@@ -173,24 +188,17 @@ class MemoApp(QObject):
 
     def _on_conversation_selected(self, conversation_id: str):
         self._active_conversation = conversation_id
-        print(conversation_id)
         self.chat_view.clear_conversation()
         
         if conversation_id in self._loaded_conversations_map:
-            print(conversation_id)
             convs = self._loaded_conversations_map[conversation_id]
-            print(conversation_id)
             for msg in convs:
-                
                 role = msg.get("role")
-                print(role)
-               
                 content = msg.get("content", "")
-                print(content[:20]+"...")
                 if role == "user":
-                    self.chat_view.add_user_message(content,animate=False)
+                    self.chat_view.add_user_message(content, animate=False)
                 else:
-                    self.chat_view.add_ai_message(content,animate=False)
+                    self.chat_view.add_ai_message(content, animate=False)
 
     def _on_new_conversation(self):
         self.chat_view.clear_conversation()
@@ -237,19 +245,17 @@ class MemoApp(QObject):
         if self.is_requested_input:
             self.chat_view.show_typing(True)
             ui_to_backend.put(f"user_input= {text}")
-            self.is_requested_input=False
-            print(self.is_requested_input)
+            self.is_requested_input = False
         else:
             if self.worker.is_busy():
                 return
             self.chat_view.show_typing(True)
-            
             self.chat_view.add_user_message(text)
-                
             self.worker.run_prompt(text)
 
     def closeEvent(self, event):
         self.worker.stop()
+        self.worker.wait(2.0)
         event.accept()
 
     def on_llm_response(self, response):
