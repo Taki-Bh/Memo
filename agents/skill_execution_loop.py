@@ -71,7 +71,7 @@ def extract_unified_output(response: str):
 
     if not isinstance(data, dict) or ("call" not in data and "task_state" not in data):
         return None, None, cleaned
-
+    print(data)
     call = data.get("call")
     if not (isinstance(call, dict) and "op_name" in call):
         call = None

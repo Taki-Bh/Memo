@@ -18,7 +18,7 @@ from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
 from core.communication import ui_to_backend, backend_to_ui
 from core.interface_new import GUIInterface
-from utilities.utilities import get_conversations
+from utilities.utilities import get_conversations, update_conversation_name,delete_conversation
 ROOT_DIR = Path(__file__).resolve().parent
 if (ROOT_DIR.parent / "memory").exists() and not (ROOT_DIR / "memory").exists():
     PROJECT_ROOT = ROOT_DIR.parent
@@ -126,7 +126,7 @@ class MemoApp(QObject):
         self.sidebar.newConversationRequested.connect(self._on_new_conversation)
         self.sidebar.utilityActivated.connect(self._on_utility_activated)
         self.sidebar.conversationRenamed.connect(self._on_conversation_renamed)
-
+        self.sidebar.conversationDeleted.connect(self._on_conversation_deleted)
         self.chat_view.messageSent.connect(self._on_message_sent)
         self.chat_view.suggestionActivated.connect(self._on_suggestion_activated)
 
@@ -139,8 +139,19 @@ class MemoApp(QObject):
     def _on_conversation_renamed(self, conversation_id: str):
         new_title, ok = QInputDialog.getText(self.window, "Rename Conversation", "Enter new title:")
         if ok and new_title.strip():
-            self.sidebar.rename_conversation(conversation_id, new_title.strip())
-
+            title = new_title.strip()
+            success = update_conversation_name(conversation_id, title)
+            if success:
+                self.sidebar.rename_conversation(conversation_id, title)
+    def _on_conversation_deleted(self,conversation_id:str):
+        success = delete_conversation(conversation_id)
+        if success:
+            self.sidebar.remove_conversation(conversation_id)
+            if self._active_conversation == conversation_id:
+                self.chat_view.clear_conversation()
+                self._active_conversation = None
+            if conversation_id in self._loaded_conversations_map:
+                del self._loaded_conversations_map[conversation_id]
     def _handle_state_update(self, state: dict):
         if not isinstance(state, dict):
             state = {"last_checkpoint": str(state)}
@@ -171,7 +182,7 @@ class MemoApp(QObject):
                 {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "ð§³"},
                 {"id": "c2", "title": "Refactor auth module", "group": "Today", "icon": "ð ï¸"},
                 {"id": "c3", "title": "Weekly meal ideas", "group": "Yesterday", "icon": "ð²"},
-                {"id": "c4", "title": "Explaining quantum tunneling", "group": "Previous 7 Days", "icon": "âï¸"},
+                {"id": "c4", "title": "Explaining quantum tunneling", "group": "Previous 7 Days", "icon": "â›ï¸"},
                 {"id": "c5", "title": "Resume feedback", "group": "Previous 7 Days", "icon": "ð"},
                 {"id": "c6", "title": "First conversation", "group": "Older", "icon": "ð¬"},
             ]

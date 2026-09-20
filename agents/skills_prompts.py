@@ -317,6 +317,14 @@ Always output exactly ONE JSON object with the two keys `"call"` and
 no surrounding prose, no separate tags.
 
 Never claim an external action occurred until the Runner confirms it.
+
+The value of "cmd" MUST be a valid JSON string.
+
+##Inside cmd:
+- Every newline MUST be encoded as \n, never as a literal newline.
+- Every double quote belonging to the command MUST be escaped as \".
+- Every backslash MUST be escaped as \\.
+- Do not use literal newlines inside JSON strings.
 """
 
 

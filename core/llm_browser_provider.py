@@ -16,7 +16,7 @@ class LLMBrowserProvider(LLMProvider):
         try:
             self.page.send_message(prompt)
         except Exception as e:
-            raise LLMRequestError("Failed to send msg : ",e)
+            raise LLMRequestError(f"Failed to send msg : {e} ")
         
         response = self.page.get_latest_response(await_response=await_response)
        

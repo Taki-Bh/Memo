@@ -76,6 +76,9 @@ class Sidebar(QWidget):
         item = self._items.get(conversation_id)
         if item:
             item.title_label.setText(new_title)
+    def remove_conversation(self, conversation_id: str):
+        self._conversations = [conv for conv in self._conversations if conv["id"] != conversation_id]
+        self._rebuild()
 
     def select_conversation(self, conversation_id: str):
         for cid, item in self._items.items():
