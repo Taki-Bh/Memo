@@ -65,7 +65,12 @@ class GeminiPage(LLMPage):
                     break
                 
                 i+=1
-            prompt_input.fill(f"Output of tool is too long, You will be recieving its output {len(batches)} batches ")
+            if len(batches)>5:
+                prompt_input.fill(f"Output is too long approximately {32*len(batches)}KB, please find an other way to perform this action.")
+                self.page.locator(self.SUBMIT_SELECTOR).click()
+                return ""
+            else:
+                prompt_input.fill(f"Output of tool is too long, You will be recieving its output {len(batches)} batches ")
             time.sleep(0.5)
                             
             self.page.locator(self.SUBMIT_SELECTOR).click()

@@ -18,7 +18,7 @@ from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
 from core.communication import ui_to_backend, backend_to_ui
 from core.interface_new import GUIInterface
-from utilities.utilities import get_conversations, update_conversation_name,delete_conversation
+from utilities.utilities import get_conversations, update_conversation_name, delete_conversation, archive_conversation
 ROOT_DIR = Path(__file__).resolve().parent
 if (ROOT_DIR.parent / "memory").exists() and not (ROOT_DIR / "memory").exists():
     PROJECT_ROOT = ROOT_DIR.parent
@@ -127,6 +127,7 @@ class MemoApp(QObject):
         self.sidebar.utilityActivated.connect(self._on_utility_activated)
         self.sidebar.conversationRenamed.connect(self._on_conversation_renamed)
         self.sidebar.conversationDeleted.connect(self._on_conversation_deleted)
+        self.sidebar.conversationArchived.connect(self._on_conversation_archived)
         self.chat_view.messageSent.connect(self._on_message_sent)
         self.chat_view.suggestionActivated.connect(self._on_suggestion_activated)
 
@@ -143,7 +144,8 @@ class MemoApp(QObject):
             success = update_conversation_name(conversation_id, title)
             if success:
                 self.sidebar.rename_conversation(conversation_id, title)
-    def _on_conversation_deleted(self,conversation_id:str):
+
+    def _on_conversation_deleted(self, conversation_id: str):
         success = delete_conversation(conversation_id)
         if success:
             self.sidebar.remove_conversation(conversation_id)
@@ -152,6 +154,17 @@ class MemoApp(QObject):
                 self._active_conversation = None
             if conversation_id in self._loaded_conversations_map:
                 del self._loaded_conversations_map[conversation_id]
+
+    def _on_conversation_archived(self, conversation_id: str):
+        success = archive_conversation(conversation_id)
+        if success:
+            self.sidebar.remove_conversation(conversation_id)
+            if self._active_conversation == conversation_id:
+                self.chat_view.clear_conversation()
+                self._active_conversation = None
+            if conversation_id in self._loaded_conversations_map:
+                del self._loaded_conversations_map[conversation_id]
+
     def _handle_state_update(self, state: dict):
         if not isinstance(state, dict):
             state = {"last_checkpoint": str(state)}
@@ -179,12 +192,12 @@ class MemoApp(QObject):
         conversations_list, self._loaded_conversations_map = get_conversations()
         if not conversations_list:
             conversations_list = [
-                {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "ð§³"},
-                {"id": "c2", "title": "Refactor auth module", "group": "Today", "icon": "ð ï¸"},
-                {"id": "c3", "title": "Weekly meal ideas", "group": "Yesterday", "icon": "ð²"},
-                {"id": "c4", "title": "Explaining quantum tunneling", "group": "Previous 7 Days", "icon": "â›ï¸"},
-                {"id": "c5", "title": "Resume feedback", "group": "Previous 7 Days", "icon": "ð"},
-                {"id": "c6", "title": "First conversation", "group": "Older", "icon": "ð¬"},
+                {"id": "c1", "title": "Trip planning: Lisbon", "group": "Today", "icon": "ðŸ§³"},
+                {"id": "c2", "title": "Refactor auth module", "group": "Today", "icon": "ðŸ› ï¸"},
+                {"id": "c3", "title": "Weekly meal ideas", "group": "Yesterday", "icon": "ðŸ²"},
+                {"id": "c4", "title": "Explaining quantum tunneling", "group": "Previous 7 Days", "icon": "âš›ï¸"},
+                {"id": "c5", "title": "Resume feedback", "group": "Previous 7 Days", "icon": "ðŸ“„"},
+                {"id": "c6", "title": "First conversation", "group": "Older", "icon": "ðŸ’¬"},
             ]
             for c in conversations_list:
                 self._loaded_conversations_map[c["id"]] = []

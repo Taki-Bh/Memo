@@ -39,6 +39,8 @@ def get_conversations():
             conversations = json.load(f)
             data = conversations.get("entities", [])
             for i, entity in enumerate(data):
+                if entity.get("archived", False):
+                    continue
                 title = entity.get("name", "Untitled Conversation")
                 date_str = entity.get("date", now.isoformat())
                 convs = entity.get("messages", [])
@@ -100,4 +102,24 @@ def delete_conversation(conv_id):
             return False
     except Exception as e:
         print(f"Error deleting conversation: {e}")
+        return False
+
+def archive_conversation(conv_id):
+    conversations_file = MEMORY_DIR / "conversations.json"
+    try:
+        with open(conversations_file, "rt") as f:
+            conversations = json.load(f)
+        data = conversations.get("entities", [])
+        idx = int(conv_id)
+        if 0 <= idx < len(data):
+            data[idx]["archived"] = True
+            conversations["entities"] = data
+            with open(conversations_file, "wt") as f:
+                json.dump(conversations, f, indent=4)
+            return True
+        else:
+            print(f"Conversation ID {conv_id} not found.")
+            return False
+    except Exception as e:
+        print(f"Error archiving conversation: {e}")
         return False

@@ -139,7 +139,7 @@ class SkillExecutionLoop(QObject):
                     '"call": "exec|read|write", '
                     '"task_state": ...'
                     "})\n"
-                    "if the verdict of the status is done leave the call block set to null\n Original user prompt was :"+user_prompt+"last state"+str(current_state)
+                    +JSON_CONSTRAINT
                 )
                 raw_response = self.provider.generate(nudge)
                 call, task_state, cleaned_response = extract_unified_output(raw_response)

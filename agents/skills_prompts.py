@@ -326,7 +326,14 @@ The value of "cmd" MUST be a valid JSON string.
 - Every backslash MUST be escaped as \\.
 - Do not use literal newlines inside JSON strings.
 """
+JSON_CONSTRAINT="""
+The value of "cmd" MUST be a valid JSON string.
 
+##Inside cmd:
+- Every newline MUST be encoded as \n, never as a literal newline.
+- Every double quote belonging to the command MUST be escaped as \".
+- Every backslash MUST be escaped as \\.
+- Do not use literal newlines inside JSON strings."""
 
 REQUIRED_STATE_KEYS = {
     "last_checkpoint",
