@@ -89,6 +89,7 @@ def extract_unified_output(response: str):
 class SkillExecutionLoop(QObject):
     stateUpdated = Signal(dict)
     userInputRequested=Signal(dict)
+    llmProviderChanged=Signal(str)
     def __init__(self, provider, tools, max_iterations: int = 20):
         super().__init__()
         self.provider = provider

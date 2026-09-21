@@ -6,12 +6,13 @@ from providers.chatgpt.chatgpt import ChatGPTProvider
 from providers.gemini.gemini import GeminiProvider
 from agents.skill_router import SkillRouterAgent
 from logging import warn
-from PyQt6.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 import json
 from core.command_parser import CommandParser
 
 import traceback
-class Assistant():
+class Assistant(QObject):
+    agentSwapped=Signal(str)
     """
     Main interface between the GUI and the AI system.
 
@@ -29,7 +30,7 @@ class Assistant():
 
         # Provider automatically chooses its available mode.
         self.llm = GeminiProvider(self.context)
-        providerChanged = pyqtSignal(str)
+       
         # Agent responsible for routing requests to skills/agents.
         self.agent_router = SkillRouterAgent(self.llm)
 
@@ -50,6 +51,7 @@ class Assistant():
         
         # Update the router's llm reference
         self.agent_router.llm = self.llm
+        self.agent_router.execution_loop.llmProviderChanged.emit()
         return f"Successfully switched provider to: {self.llm.name}"
 
     def suggest_and_set_title(self) -> str:

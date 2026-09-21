@@ -38,6 +38,10 @@ class LLMWorker(QObject):
     error = Signal(str)
     stateUpdated = Signal(dict)
     userInputRequested = Signal(dict)
+
+    agentSwapped = Signal(str)
+    providerSwapped = Signal(str)
+
     def __init__(self):
         super().__init__()
         self.interface = None
@@ -63,8 +67,10 @@ class LLMWorker(QObject):
     def _loop(self):
         self.interface = GUIInterface()
         if self.interface:
+            # self.interface.assistant.agentSwapped.connect(self.agentSwapped.emit)
             self.interface.assistant.agent_router.execution_loop.stateUpdated.connect(self.stateUpdated.emit)
             self.interface.assistant.agent_router.execution_loop.userInputRequested.connect(self.userInputRequested.emit)
+            self.interface.assistant.agent_router.execution_loop.llmProviderChanged.connect(self.providerSwapped.emit)
         while True:
             prompt = self._queue.get()
             if prompt is None:
@@ -136,7 +142,7 @@ class MemoApp(QObject):
         self.worker.error.connect(self.on_llm_error)
         self.worker.stateUpdated.connect(self._handle_state_update)
         self.worker.userInputRequested.connect(self._handle_input_requested)
-
+        self.worker.providerSwapped.connect(self._handle_agent_swapped)
     def _on_conversation_renamed(self, conversation_id: str):
         new_title, ok = QInputDialog.getText(self.window, "Rename Conversation", "Enter new title:")
         if ok and new_title.strip():
@@ -144,7 +150,11 @@ class MemoApp(QObject):
             success = update_conversation_name(conversation_id, title)
             if success:
                 self.sidebar.rename_conversation(conversation_id, title)
-
+        
+    def _handle_agent_swapped(self):
+        self.worker.interface.assistant.agent_router.execution_loop.stateUpdated.connect(self.stateUpdated.emit)
+        self.worker.interface.assistant.agent_router.execution_loop.userInputRequested.connect(self.userInputRequested.emit)
+        print("Successful swap")
     def _on_conversation_deleted(self, conversation_id: str):
         success = delete_conversation(conversation_id)
         if success:
