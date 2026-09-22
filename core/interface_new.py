@@ -41,17 +41,20 @@ class Assistant(QObject):
         provider_name = provider_name.strip().lower()
         if provider_name in ["chatgpt", "gpt", "openai"]:
             self.llm = ChatGPTProvider(self.context)
+            self.agent_router.execution_loop.llmProviderChanged.emit("xd")
+
             self.agent_router = SkillRouterAgent(self.llm)
             
         elif provider_name in ["gemini", "google"]:
             self.llm = GeminiProvider(self.context)
+            self.agent_router.execution_loop.llmProviderChanged.emit("xd")
+
             self.agent_router = SkillRouterAgent(self.llm)
         else:
             return f"Unknown provider '{provider_name}'. Available providers: chatgpt, gemini"
         
         # Update the router's llm reference
         self.agent_router.llm = self.llm
-        self.agent_router.execution_loop.llmProviderChanged.emit()
         return f"Successfully switched provider to: {self.llm.name}"
 
     def suggest_and_set_title(self) -> str:
