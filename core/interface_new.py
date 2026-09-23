@@ -51,7 +51,7 @@ class Assistant(QObject):
 
             self.agent_router = SkillRouterAgent(self.llm)
         else:
-            return f"Unknown provider '{provider_name}'. Available providers: chatgpt, gemini"
+            return f"Unknown provider '{ provider_name}'. Available providers: chatgpt, gemini"
         
         # Update the router's llm reference
         self.agent_router.llm = self.llm
