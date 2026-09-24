@@ -161,6 +161,7 @@ class LLMWorker(QObject):
     # ---------------------------------------------------------
 
     def _loop(self):
+        self._ensure_interface()
         # FIX: interface construction now happens inside the per-prompt
         # try/except below (not in a way that can kill the whole loop),
         # and the while loop itself is no longer wrapped in a single

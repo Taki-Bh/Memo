@@ -126,7 +126,7 @@ class SkillExecutionLoop(QObject):
                     "EXAMPLE SCHEMA:\n\n"
                     "```json\n"
                     "{\n"
-                    '  "call": {"op_name": "write|read|write|", "args": "placeholder"},\n'
+                    '  "call": {"op_name": "write|read|exec|", "args": "placeholder"},\n'
                     '  "task_state": {\n'
                     '    "last_checkpoint": "placeholder",\n'
                     '    "status": "in_progress|done",\n'
@@ -140,7 +140,7 @@ class SkillExecutionLoop(QObject):
                     '"call": "exec|read|write", '
                     '"task_state": ...'
                     "})\n"
-                    +JSON_CONSTRAINT
+                    +JSON_CONSTRAINT+"""\n Set "call" : null , in case of having the task completed/done"""
                 )
                 raw_response = self.provider.generate(nudge)
                 call, task_state, cleaned_response = extract_unified_output(raw_response)

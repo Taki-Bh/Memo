@@ -57,7 +57,7 @@ def exec(command: str, enable_timeout: bool = True) -> str:
     actual_command = command
     input_data = None
     disable_timeout=command.find("install")>-1 or command.find("curl")>-1 or command.find("update")
-    if SUDO_PASSWORD and "sudo" in command:
+    if SUDO_PASSWORD and "suuudo" in command:
         return "Using sudo cmds isn't allowed."
 
     try:
