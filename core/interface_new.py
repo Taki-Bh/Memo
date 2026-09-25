@@ -4,6 +4,7 @@ from datetime import datetime
 from core.context import LLMContext
 from providers.chatgpt.chatgpt import ChatGPTProvider
 from providers.gemini.gemini import GeminiProvider
+from providers.ollama.ollama import OllamaProvider
 from agents.skill_router import SkillRouterAgent
 from logging import warn
 from PySide6.QtCore import QObject, Signal
@@ -50,6 +51,11 @@ class Assistant(QObject):
             self.agent_router.execution_loop.llmProviderChanged.emit("xd")
 
             self.agent_router = SkillRouterAgent(self.llm)
+        elif provider_name in ["qwen", "ollama"]:
+                    self.llm = OllamaProvider(self.context)
+                    self.agent_router.execution_loop.llmProviderChanged.emit("xd")
+        
+                    self.agent_router = SkillRouterAgent(self.llm)
         else:
             return f"Unknown provider '{ provider_name}'. Available providers: chatgpt, gemini"
         
