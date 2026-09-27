@@ -10,7 +10,7 @@ class OllamaProvider(LLMProvider):
         context: LLMContext,
         api_key: str | None = None,
         model: str = "qwen3:8b",
-        base_url: str = "http://localhost:11434/v1",
+        base_url: str = "http://localhost:11434",
     ):
         super().__init__(context)
         self.name = "Ollama"
@@ -18,6 +18,7 @@ class OllamaProvider(LLMProvider):
             context=context,
             api_key=api_key,
             model=model,
+            base_url=base_url,
         )
         self.mode = "api"
 

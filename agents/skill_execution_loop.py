@@ -175,7 +175,8 @@ class SkillExecutionLoop(QObject):
                                             f"You are not to return Done at the start of skill execution. "
                                             "You are to perform the required task as it is not performed yet. "
                                             
-                                    )
+                                   )
+                        continue
                     return {
                         "status": "done",
                         "state": task_state,
