@@ -18,7 +18,7 @@ from ui.widgets.sidebar import Sidebar
 from ui.widgets.ui_loader import CustomUiLoader
 from ui.widgets import theme_manager
 from core.communication import ui_to_backend, backend_to_ui
-from core.interface_new import GUIInterface
+from core.interface_new import Assistant, GUIInterface
 from utilities.utilities import (
     get_conversations,
     update_conversation_name,
@@ -205,9 +205,16 @@ class LLMWorker(QObject):
 
 
 class MockAssistant:
+    """Compatibility wrapper backed by the real Assistant implementation."""
+
+    def init(self):
+        self.assistant = Assistant()
+
     def reply_to(self, user_text: str, await_response=True) -> str:
-        response = GUIInterface().run(user_text)
-        return response
+        return self.assistant.send(
+            user_text,
+            await_response=await_response,
+        )
 
 
 class MemoApp(QObject):

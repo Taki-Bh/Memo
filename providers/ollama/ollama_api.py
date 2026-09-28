@@ -37,6 +37,7 @@ class OllamaAPIProvider(LLMProvider):
                         "content": prompt,
                     }
                 ],
+                think=False,
             )
 
             if isinstance(response, dict):
