@@ -458,3 +458,79 @@ QMenu {
     background-color: #EAF3FC;
     border: 1px solid black;
 }
+
+/* ---------------------------------------------------------------------
+   Confirmation message
+   --------------------------------------------------------------------- */
+
+#confirmationMessage {
+    background: transparent;
+}
+
+/* Bottom section containing the Yes / No selection */
+#confirmationArea {
+    background-color: rgba(20,80,140,0.03);
+    border-top: 1px solid rgba(20,80,140,0.10);
+    border-radius: 0 0 12px 12px;
+}
+
+/* Base styling shared by both confirmation buttons */
+#confirmationButton {
+    background-color: rgba(20,80,140,0.05);
+    border: 1px solid rgba(20,80,140,0.14);
+    border-radius: 7px;
+    padding: 4px 14px;
+    color: #4E7A96;
+    font-size: 11px;
+}
+
+#confirmationButton:hover {
+    background-color: rgba(20,80,140,0.10);
+    border: 1px solid rgba(20,80,140,0.22);
+    color: #12283C;
+}
+
+#confirmationButton:pressed {
+    background-color: rgba(20,80,140,0.15);
+}
+
+/* Yes — positive/accent action */
+#confirmationYesButton {
+    background-color: rgba(47,135,214,0.12);
+    border: 1px solid rgba(47,135,214,0.32);
+    border-radius: 7px;
+    padding: 4px 14px;
+    color: #0D4A78;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#confirmationYesButton:hover {
+    background-color: rgba(47,135,214,0.20);
+    border: 1px solid rgba(47,135,214,0.48);
+    color: #0D4A78;
+}
+
+#confirmationYesButton:pressed {
+    background-color: rgba(47,135,214,0.28);
+}
+
+/* No — neutral/destructive avoidance, without introducing red */
+#confirmationNoButton {
+    background-color: rgba(20,80,140,0.04);
+    border: 1px solid rgba(20,80,140,0.12);
+    border-radius: 7px;
+    padding: 4px 14px;
+    color: #4E7A96;
+    font-size: 11px;
+}
+
+#confirmationNoButton:hover {
+    background-color: rgba(20,80,140,0.09);
+    border: 1px solid rgba(20,80,140,0.20);
+    color: #12283C;
+}
+
+#confirmationNoButton:pressed {
+    background-color: rgba(20,80,140,0.14);
+}

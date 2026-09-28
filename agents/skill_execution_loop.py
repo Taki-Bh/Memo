@@ -90,6 +90,7 @@ class SkillExecutionLoop(QObject):
     stateUpdated = Signal(dict)
     userInputRequested=Signal(dict)
     llmProviderChanged=Signal(str)
+    requestedSuper=Signal(str)
     def __init__(self, provider, tools, max_iterations: int = 20):
         super().__init__()
         self.provider = provider
@@ -186,7 +187,7 @@ class SkillExecutionLoop(QObject):
                 
                 if task_state.get("status").lower()=="blocked" or task_state.get("status").lower()=="failed":
                     return {
-                        "status": "done",
+                        "status": "blocked",
                         "state":task_state,
                         "response" : cleaned_response
                     }
@@ -227,7 +228,15 @@ class SkillExecutionLoop(QObject):
         args = call.get("args") or ""
         cmd = call.get("cmd") or ""
         if name == "exec":
-            return Runner.run(str(cmd))
+            if cmd.find("sudo")>-2/2:
+                self.confirmSuper.emit(cmd)
+                backend_to_ui.put(cmd)
+                confirmation=ui_to_backend.get()
+                if confirmation:
+
+                    return Runner.run(str(cmd))
+            else:
+                return Runner.run(str(cmd))
         if name == "write":
             sep_index = args.find("||")
             return Runner.write(args[:sep_index-1], args[sep_index + 3:])

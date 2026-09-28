@@ -51,7 +51,7 @@ class LLMWorker(QObject):
 
     agentSwapped = Signal(str)
     providerSwapped = Signal(str)
-
+    requestedSuper = Signal(str)
     def __init__(self):
         super().__init__()
 
@@ -89,7 +89,8 @@ class LLMWorker(QObject):
 
     def _forward_user_input_requested(self, state):
         self.userInputRequested.emit(state)
-
+    def _forward_requested_super(self,cmd: str):
+        self.requestedSuper.emit(cmd)
     def _forward_provider_swapped(self, provider):
         print(provider)
         self.providerSwapped.emit(provider)
@@ -114,6 +115,9 @@ class LLMWorker(QObject):
 
         self.execution_loop.llmProviderChanged.connect(
             self._forward_provider_swapped
+        )
+        self.execution_loop.requestedSuper.connect(
+            self._forward_requested_super
         )
 
     def _disconnect_execution_loop(self):
@@ -305,7 +309,9 @@ class MemoApp(QObject):
         self.worker.stateUpdated.connect(
             self._handle_state_update
         )
-
+        self.worker.requestedSuper.connect(
+            self._handle_super_requested
+        )
         self.worker.userInputRequested.connect(
             self._handle_input_requested
         )
@@ -334,7 +340,9 @@ class MemoApp(QObject):
                     conversation_id,
                     title,
                 )
-
+    def _handle_super_requested(self,cmd:str):
+        self.chat_view.add_confirmation_message("Approve ?:" +cmd)
+        print(cmd)
     def _handle_provider_swapped(self, provider):
         print("Trying swap")
 
@@ -655,6 +663,7 @@ class MemoApp(QObject):
         self.chat_view.add_ai_message(
             response
         )
+        
 
     def on_llm_error(self, error_message):
         self.chat_view.show_typing(False)

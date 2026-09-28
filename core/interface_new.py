@@ -14,6 +14,7 @@ from core.command_parser import CommandParser
 import traceback
 class Assistant(QObject):
     agentSwapped=Signal(str)
+    
     """
     Main interface between the GUI and the AI system.
 
@@ -170,12 +171,13 @@ class Assistant(QObject):
             prompt,
             await_response=await_response
         )
+        self.agent_router.execution_loop.requestedSuper.emit("Sigma Sigma boi")
         try:
             cleanraw=raw[raw.find("{"):]
             if cleanraw[len(cleanraw)-1]=="\"":
                 cleanraw=cleanraw+"}"
             parsed_response=json.loads(cleanraw)
-            return parsed_response.get("message", "No message returned from LLM.")
+            return parsed_response.get("message", raw)
         except json.JSONDecodeError:
             return raw + traceback.format_exc() + "\n[Error] LLM returned invalid JSON. Please ensure the LLM returns a valid JSON response."
 
@@ -187,7 +189,7 @@ class Assistant(QObject):
         
     ) -> str:
         """Send an explicit agent request to the agent router."""
-
+        self.agent_router.execution_loop.requestedSuper.emit("Sigma Sigma boi")
         return self.agent_router.handleRequest(command,prompt)
 
 

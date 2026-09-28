@@ -7,6 +7,6 @@ state_log.net
 __pycache__/
 *.py[cod]
 .skill_state/
-
+ 
 # Installed Node.js dependencies
 node_modules/

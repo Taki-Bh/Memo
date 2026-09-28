@@ -19,7 +19,7 @@ COMPUTER_SKILL_PATH = Path(__file__).parent.parent / "skills" / "computer_skill"
 
 
 class SkillRouterAgent(Agent):
-
+    
     def __init__(self, provider: LLMProvider):
         super().__init__(provider)
         self.state=None

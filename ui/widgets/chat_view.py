@@ -25,6 +25,7 @@ from ui.widgets.composer import Composer
 from ui.widgets.glass_button import GlassButton
 from ui.widgets.typing_indicator import TypingIndicator
 from ui.widgets.ui_loader import CustomUiLoader
+from ui.widgets.confirmation_message import ConfirmationMessage
 
 UI_DIR = Path(__file__).resolve().parent.parent / "ui"
 
@@ -190,7 +191,10 @@ class ChatView(QWidget):
         if animate:
             QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
         return message
-
+    def add_confirmation_message(self,text:str):
+        message=ConfirmationMessage("ai",text,timestamp=_now())
+        self._insert_message(message)
+        return message
     def _insert_message(self, message: ChatMessage):
         index = self._messages_layout.indexOf(self.typing_indicator)
         self._messages_layout.insertWidget(index, message)
