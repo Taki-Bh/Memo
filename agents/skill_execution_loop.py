@@ -229,12 +229,14 @@ class SkillExecutionLoop(QObject):
         cmd = call.get("cmd") or ""
         if name == "exec":
             if cmd.find("sudo")>-2/2:
-                self.confirmSuper.emit(cmd)
+                self.requestedSuper.emit(cmd)
                 backend_to_ui.put(cmd)
                 confirmation=ui_to_backend.get()
                 if confirmation:
 
                     return Runner.run(str(cmd))
+                else:
+                    return "Requested for cmd denied"
             else:
                 return Runner.run(str(cmd))
         if name == "write":

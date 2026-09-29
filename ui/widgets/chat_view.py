@@ -1,6 +1,6 @@
 from datetime import datetime
 from pathlib import Path
-
+from core.communication import backend_to_ui,ui_to_backend
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtCore import (
     Qt,
@@ -191,15 +191,49 @@ class ChatView(QWidget):
         if animate:
             QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
         return message
-    def add_confirmation_message(self,text:str):
-        message=ConfirmationMessage("ai",text,timestamp=_now())
-        self._insert_message(message)
+    def add_confirmation_message(self, text: str):
+        message = ConfirmationMessage("ai", text, timestamp=_now())
+        index = self._insert_message(message)
+
+        message.yesRequested.connect(
+            lambda: self._approve_request(index)
+        )
+        message.noRequested.connect(
+            lambda: self._disapprove_request(index)
+        )
+
         return message
+
+
+    def _approve_request(self, index: int):
+        ui_to_backend.put(True)
+        self._delete_message(index)
+
+
+    def _disapprove_request(self, index: int):
+        ui_to_backend.put(False)
+        self._delete_message(index)
+
+
+    def _delete_message(self, index: int):
+        item = self._messages_layout.itemAt(index)
+
+        if item is not None:
+            widget = item.widget()
+            if widget is not None:
+                self._messages_layout.removeWidget(widget)
+                widget.deleteLater()
+
+
     def _insert_message(self, message: ChatMessage):
         index = self._messages_layout.indexOf(self.typing_indicator)
+
         self._messages_layout.insertWidget(index, message)
+
         self._autoscroll = True
         QTimer.singleShot(0, self._scroll_to_bottom)
+
+        return index
 
     def _ensure_conversation_started(self):
         if not self._has_messages:

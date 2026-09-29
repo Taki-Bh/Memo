@@ -171,7 +171,7 @@ class Assistant(QObject):
             prompt,
             await_response=await_response
         )
-        self.agent_router.execution_loop.requestedSuper.emit("Sigma Sigma boi")
+        """self.agent_router.execution_loop.requestedSuper.emit("Sigma Sigma boi")"""
         try:
             cleanraw=raw[raw.find("{"):]
             if cleanraw[len(cleanraw)-1]=="\"":
@@ -189,7 +189,7 @@ class Assistant(QObject):
         
     ) -> str:
         """Send an explicit agent request to the agent router."""
-        self.agent_router.execution_loop.requestedSuper.emit("Sigma Sigma boi")
+        """self.agent_router.execution_loop.requestedSuper.emit("Sigma Sigma boi")"""
         return self.agent_router.handleRequest(command,prompt)
 
 
