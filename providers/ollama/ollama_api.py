@@ -39,7 +39,7 @@ class OllamaAPIProvider(LLMProvider):
                 ],
                 think=False,
             )
-
+            print(response)
             if isinstance(response, dict):
                 content = response.get("message", {}).get("content")
             else:

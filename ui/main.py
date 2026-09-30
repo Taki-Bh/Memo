@@ -26,7 +26,7 @@ from utilities.utilities import (
     archive_conversation,
 )
 
-# FIX: __file__ (was mangled to **file** — invalid syntax / NameError)
+
 ROOT_DIR = Path(__file__).resolve().parent
 
 if (ROOT_DIR.parent / "memory").exists() and not (ROOT_DIR / "memory").exists():
@@ -52,6 +52,7 @@ class LLMWorker(QObject):
     agentSwapped = Signal(str)
     providerSwapped = Signal(str)
     requestedSuper = Signal(str)
+
     def __init__(self):
         super().__init__()
 
@@ -73,7 +74,34 @@ class LLMWorker(QObject):
     def is_busy(self) -> bool:
         return self._busy.is_set() or not self._queue.empty()
 
+    # ---------------------------------------------------------
+    # PROMPT CANCELLATION
+    # ---------------------------------------------------------
+
+    def stop_prompt(self):
+        """
+        Request cancellation of the currently running prompt.
+
+        This does NOT terminate the worker thread.
+        It tells the active SkillExecutionLoop to stop
+        cooperatively.
+        """
+        if self.execution_loop is not None:
+            print("[LLMWorker] Requesting prompt cancellation...")
+            self.execution_loop.stop()
+
+    # ---------------------------------------------------------
+    # WORKER SHUTDOWN
+    # ---------------------------------------------------------
+
     def stop(self):
+        """
+        Shut down the worker thread.
+
+        This is different from stop_prompt():
+        stop_prompt() cancels the current prompt,
+        while stop() terminates the worker loop.
+        """
         self._queue.put(None)
 
     def wait(self, timeout: float | None = None):
@@ -89,8 +117,10 @@ class LLMWorker(QObject):
 
     def _forward_user_input_requested(self, state):
         self.userInputRequested.emit(state)
-    def _forward_requested_super(self,cmd: str):
+
+    def _forward_requested_super(self, cmd: str):
         self.requestedSuper.emit(cmd)
+
     def _forward_provider_swapped(self, provider):
         print(provider)
         self.providerSwapped.emit(provider)
@@ -116,6 +146,7 @@ class LLMWorker(QObject):
         self.execution_loop.llmProviderChanged.connect(
             self._forward_provider_swapped
         )
+
         self.execution_loop.requestedSuper.connect(
             self._forward_requested_super
         )
@@ -145,10 +176,20 @@ class LLMWorker(QObject):
         except (TypeError, RuntimeError):
             pass
 
+        try:
+            self.execution_loop.requestedSuper.disconnect(
+                self._forward_requested_super
+            )
+        except (TypeError, RuntimeError):
+            pass
+
         self.execution_loop = None
 
     def _ensure_interface(self):
-        """Create (or recreate) the backend interface and wire its signals."""
+        """
+        Create (or recreate) the backend interface
+        and wire its signals.
+        """
         self.interface = GUIInterface()
 
         execution_loop = (
@@ -166,15 +207,7 @@ class LLMWorker(QObject):
 
     def _loop(self):
         self._ensure_interface()
-        # FIX: interface construction now happens inside the per-prompt
-        # try/except below (not in a way that can kill the whole loop),
-        # and the while loop itself is no longer wrapped in a single
-        # outer try/except. Previously, if GUIInterface() raised on
-        # startup (or anything unexpected happened), the *entire* thread
-        # would exit silently. After that, run_prompt() would keep
-        # queuing prompts that nothing ever consumed, and is_busy()
-        # would report True forever — so the UI would just hang with
-        # no visible error and stop responding to new messages.
+
         while True:
             prompt = self._queue.get()
 
@@ -196,9 +229,6 @@ class LLMWorker(QObject):
                     str(e) + "\n" + traceback.format_exc()
                 )
 
-                # If the interface itself is broken, drop it so the
-                # next prompt attempts a clean re-init instead of
-                # reusing a possibly-corrupt object.
                 self._disconnect_execution_loop()
                 self.interface = None
 
@@ -290,6 +320,14 @@ class MemoApp(QObject):
             self._on_message_sent
         )
 
+        # -----------------------------------------------------
+        # STOP BUTTON
+        # -----------------------------------------------------
+
+        self.chat_view.stopRequested.connect(
+            self._on_stop_requested
+        )
+
         self.chat_view.suggestionActivated.connect(
             self._on_suggestion_activated
         )
@@ -309,9 +347,11 @@ class MemoApp(QObject):
         self.worker.stateUpdated.connect(
             self._handle_state_update
         )
+
         self.worker.requestedSuper.connect(
             self._handle_super_requested
         )
+
         self.worker.userInputRequested.connect(
             self._handle_input_requested
         )
@@ -319,6 +359,28 @@ class MemoApp(QObject):
         self.worker.providerSwapped.connect(
             self._handle_provider_swapped
         )
+
+    # ---------------------------------------------------------
+    # STOP CURRENT PROMPT
+    # ---------------------------------------------------------
+
+    def _on_stop_requested(self):
+        """
+        Cancel the currently running prompt without
+        terminating the worker thread.
+        """
+        if not self.worker.is_busy():
+            return
+
+        print("[MemoApp] Stop requested.")
+
+        self.worker.stop_prompt()
+
+        self.chat_view.show_typing(False)
+
+    # ---------------------------------------------------------
+    # CONVERSATIONS
+    # ---------------------------------------------------------
 
     def _on_conversation_renamed(self, conversation_id: str):
         new_title, ok = QInputDialog.getText(
@@ -340,10 +402,32 @@ class MemoApp(QObject):
                     conversation_id,
                     title,
                 )
-    def _handle_super_requested(self,cmd:str):
-        cmd=backend_to_ui.get()
-        self.chat_view.add_confirmation_message("Approve ?:" +cmd)
-        print(cmd)
+
+    # ---------------------------------------------------------
+    # SUPERUSER CONFIRMATION
+    # ---------------------------------------------------------
+
+    def _handle_super_requested(self, cmd: str):
+        """
+        Receive the command directly from the Qt signal.
+
+        Do NOT call backend_to_ui.get() here because
+        the command is already supplied as `cmd`.
+        """
+        cmd = str(cmd)
+
+        print(
+            f"[MemoApp] Superuser command requested: {cmd}"
+        )
+
+        self.chat_view.add_confirmation_message(
+            f"Approve ?: {cmd}"
+        )
+
+    # ---------------------------------------------------------
+    # PROVIDER SWAP
+    # ---------------------------------------------------------
+
     def _handle_provider_swapped(self, provider):
         print("Trying swap")
 
@@ -359,15 +443,17 @@ class MemoApp(QObject):
             .execution_loop
         )
 
-        # Disconnect the old execution loop.
         self.worker._disconnect_execution_loop()
 
-        # Connect the new execution loop.
         self.worker._connect_execution_loop(
             new_execution_loop
         )
 
         print("Successful swap")
+
+    # ---------------------------------------------------------
+    # CONVERSATION MANAGEMENT
+    # ---------------------------------------------------------
 
     def _on_conversation_deleted(self, conversation_id: str):
         success = delete_conversation(conversation_id)
@@ -405,6 +491,10 @@ class MemoApp(QObject):
                     conversation_id
                 ]
 
+    # ---------------------------------------------------------
+    # STATE
+    # ---------------------------------------------------------
+
     def _handle_state_update(self, state: dict):
         if not isinstance(state, dict):
             state = {
@@ -433,13 +523,13 @@ class MemoApp(QObject):
             )
         )
 
+    # ---------------------------------------------------------
+    # USER INPUT REQUEST
+    # ---------------------------------------------------------
+
     def _handle_input_requested(self, state: dict):
-        print(f"recieved dict = {state}")
-
-        shared_obj = backend_to_ui.get()
-
         print(
-            f"Recived thing from backend is = {shared_obj}"
+            f"Received user input request: {state}"
         )
 
         self.is_requested_input = True
@@ -447,11 +537,15 @@ class MemoApp(QObject):
         self.chat_view.show_typing(False)
 
         self.chat_view.add_ai_message(
-            shared_obj.get(
+            state.get(
                 "last_question_to_user",
                 "Failed to extract request.",
             )
         )
+
+    # ---------------------------------------------------------
+    # CONVERSATIONS
+    # ---------------------------------------------------------
 
     def _load_past_conversations(self):
         self._loaded_conversations_map = {}
@@ -571,6 +665,10 @@ class MemoApp(QObject):
 
         self.sidebar.select_conversation("")
 
+    # ---------------------------------------------------------
+    # UTILITIES
+    # ---------------------------------------------------------
+
     def _on_utility_activated(self, name: str):
         if name == "preferences":
             self._open_preferences()
@@ -616,6 +714,10 @@ class MemoApp(QObject):
     def _on_theme_changed(self, key: str):
         pass
 
+    # ---------------------------------------------------------
+    # SUGGESTIONS
+    # ---------------------------------------------------------
+
     def _on_suggestion_activated(
         self,
         label: str,
@@ -625,6 +727,10 @@ class MemoApp(QObject):
         )
 
         self.chat_view.composer.text_edit.setFocus()
+
+    # ---------------------------------------------------------
+    # MESSAGE HANDLING
+    # ---------------------------------------------------------
 
     def _on_message_sent(self, text: str):
         if text.strip() == "/quit":
@@ -653,10 +759,18 @@ class MemoApp(QObject):
 
             self.worker.run_prompt(text)
 
+    # ---------------------------------------------------------
+    # SHUTDOWN
+    # ---------------------------------------------------------
+
     def closeEvent(self, event):
         self.worker.stop()
         self.worker.wait(2.0)
         event.accept()
+
+    # ---------------------------------------------------------
+    # RESPONSES
+    # ---------------------------------------------------------
 
     def on_llm_response(self, response):
         self.chat_view.show_typing(False)
@@ -664,7 +778,6 @@ class MemoApp(QObject):
         self.chat_view.add_ai_message(
             response
         )
-        
 
     def on_llm_error(self, error_message):
         self.chat_view.show_typing(False)
@@ -708,6 +821,5 @@ def main():
     )
 
 
-# FIX: __name__ / __main__ (was mangled to **name**/**main** — invalid syntax)
 if __name__ == "__main__":
     main()

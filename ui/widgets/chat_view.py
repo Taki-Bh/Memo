@@ -73,6 +73,7 @@ def animate_in(widget: QWidget, target_pos: QPoint):
 class ChatView(QWidget):
     messageSent = Signal(str)
     suggestionActivated = Signal(str)
+    stopRequested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -93,6 +94,7 @@ class ChatView(QWidget):
         self.composer = Composer(self.ui.composerContainer)
         composer_layout.addWidget(self.composer)
         self.composer.messageSent.connect(self._on_message_sent)
+        self.composer.stopRequested.connect(self._on_stop_requested)
 
         self._messages_layout: QVBoxLayout = self.ui.messagesLayout
         self._tail_spacer = self._messages_layout.takeAt(self._messages_layout.count() - 1)
@@ -173,6 +175,9 @@ class ChatView(QWidget):
     # ------------------------------------------------------------------
     # Message handling
     # ------------------------------------------------------------------
+    def _on_stop_requested(self):
+        self.stopRequested.emit() if hasattr(self, "stopRequested") else None
+
     def _on_message_sent(self, text: str):
         self.messageSent.emit(text)
 
