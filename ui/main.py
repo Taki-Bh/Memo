@@ -341,6 +341,7 @@ class MemoApp(QObject):
                     title,
                 )
     def _handle_super_requested(self,cmd:str):
+        cmd=backend_to_ui.get()
         self.chat_view.add_confirmation_message("Approve ?:" +cmd)
         print(cmd)
     def _handle_provider_swapped(self, provider):
