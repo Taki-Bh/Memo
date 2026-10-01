@@ -534,3 +534,12 @@ QMenu {
 #confirmationNoButton:pressed {
     background-color: rgba(20,80,140,0.14);
 }
+
+#sendButton[processing="true"] {
+    background-color: #E53935;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+#sendButton[processing="true"]:hover {
+    background-color: #EF5350;
+}

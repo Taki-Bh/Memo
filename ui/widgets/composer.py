@@ -89,7 +89,7 @@ class Composer(QWidget):
         self.text_edit.clear_and_reset()
 
     def set_enabled_state(self, enabled: bool):
-        """Enable normal input, or show a clickable greyed stop button."""
+        """Enable normal input, or show a clickable red stop button."""
         self._processing = not enabled
 
         self.text_edit.setEnabled(enabled)
@@ -98,6 +98,7 @@ class Composer(QWidget):
 
         if enabled:
             self.send_button.setProperty("processing", False)
+            self.send_button.setText("➤")
             self._on_text_changed()
 
         else:
@@ -106,6 +107,7 @@ class Composer(QWidget):
             self.send_button.setEnabled(True)
             self.send_button.setProperty("active", False)
             self.send_button.setProperty("processing", True)
+            self.send_button.setText("■")
 
             self.send_button.style().unpolish(self.send_button)
             self.send_button.style().polish(self.send_button)

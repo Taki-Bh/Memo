@@ -459,3 +459,12 @@ QMenu {
     background-color: #050806;
     border: 1px solid black;
 }
+
+#sendButton[processing="true"] {
+    background-color: #E53935;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+#sendButton[processing="true"]:hover {
+    background-color: #EF5350;
+}

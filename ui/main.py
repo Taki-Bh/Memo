@@ -374,9 +374,9 @@ class MemoApp(QObject):
 
         print("[MemoApp] Stop requested.")
 
-        self.worker.stop_prompt()
+        self.chat_view.typing_indicator.change_typing_message("Stopping...")
 
-        self.chat_view.show_typing(False)
+        self.worker.stop_prompt()
 
     # ---------------------------------------------------------
     # CONVERSATIONS

@@ -41,12 +41,12 @@ class SkillRouterAgent(Agent):
 
 
 
-        
+        print(result)
         exec_state=result.get("state")
             #print(f"Execution state: {exec_state}")
         cleaned_response = ""
         if exec_state is None:
-            cleaned_response = "Skill execution returned no result."
+            cleaned_response = result
         else:
             cleaned_response = (
                 exec_state.get("message") or exec_state.get("last_checkpoint") or ""
