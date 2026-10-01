@@ -1,139 +1,151 @@
-# Memo
+ # Memo
 
-Memo is a desktop AI assistant that routes requests to **skills** — self-contained instruction packs (in the style of Claude's skill system) — and can act on your local machine through a small, sandboxed tool layer (read / write / execute / screenshot). It supports multiple LLM backends (Gemini, ChatGPT, local Ollama models) and ships with a PySide6 desktop UI.
+Memo is a desktop AI assistant that routes requests to skills — self-contained instruction packs inspired by Claude's skill system — and can operate on your local machine through a small, sandboxed tool layer (read, write, exec, and screenshot). It supports multiple LLM backends, including Gemini, ChatGPT, and local Ollama models, and ships with a PySide6 desktop UI.
 
-> **Status: work in progress.** This is an active experiment, not a hardened tool. See [Known Issues & Security](#known-issues--security) before running it against anything you care about.
+> Status: work in progress. Memo is an active experiment rather than a hardened production tool. Review Known Issues & Security before using it with sensitive data or exposing it to untrusted prompts.
 
 ## Features
 
-- **Skill-based agent routing** — a lightweight router LLM call reads a `SKILL.md` index (name + description frontmatter, à la Claude Skills) and decides whether to answer directly or hand off to a skill's full instructions.
-- **Multi-provider LLM support** — swap between Gemini, ChatGPT, and local Ollama models at runtime with `/swap <provider>`, each with both an official-API path and a browser-automation fallback (via Playwright) for when no API key is configured.
-- **Computer-use tool loop** — an execution loop gives the model `read`, `write`, `exec`, and `screenshot` tools to inspect and operate on the local filesystem, with a basic protected-path guard (`/etc`, `/boot`, `/usr`, `~/.ssh`, etc.).
-- **Session/state persistence** — long-running skill executions checkpoint their state to disk (`.skill_state/`) so they can resume across turns; conversations can be saved to `memory/conversations.json`.
-- **Desktop UI** — a PySide6 shell (glass/neumorphic dark theme, Qt Designer–editable `.ui` layouts) with a sidebar, chat view, and auto-resizing composer.
-- **Bundled skill library** — ready-made skills for document generation (`docx`, `pptx`, `xlsx`, `pdf`), design (`canvas-design`, `theme-factory`, `frontend-design`, `algorithmic-art`), and dev tooling (`mcp-builder`, `skill-creator`, `webapp-testing`).
+- Skill-based agent routing — a lightweight router matches requests against the SKILL.md skill index and can answer directly, load a skill, or continue an existing skill execution.
+- Multi-provider LLM support — switch between Gemini, ChatGPT, and local Ollama models at runtime with /swap <provider>. Providers can use official APIs or browser automation through Playwright when configured for that path.
+- Computer-use tool loop — the computer skill can inspect and operate on the local filesystem through read, write, exec, and screenshot.
+- Checkpointed skill execution — long-running skill tasks can persist execution state in .skill_state/ and resume from a previous checkpoint.
+- Conversation persistence — conversations can be saved to memory/conversations.json or another path.
+- Desktop UI — a PySide6 application provides a dark glass/neumorphic interface with a sidebar, chat view, and auto-resizing composer. Qt Designer .ui layouts are supported.
+- Bundled skill library — includes document generation, design, development, communication, and tooling skills.
 
 ## Architecture
 
-```
+text
 User input
    │
    ▼
-Assistant.send()  ──►  CommandParser  (detects /agent, /swap, /save, /computer)
+Assistant.send() ──► CommandParser
    │
-   ├── plain message ──► LLM Provider.generate()  (JSON-formatted reply)
+   ├── normal message ──► LLM Provider.generate()
    │
-   └── /agent, /computer ──► SkillRouterAgent
-                                 │
-                                 ├─ Router prompt: match request against the
-                                 │  skill index → respond_directly | load_skill
-                                 │  | continue_skill
-                                 │
-                                 └─ SkillExecutionLoop
-                                       ├─ loads SKILL.md instructions
-                                       ├─ calls tools via Runner (read/write/exec/screenshot)
-                                       ├─ checkpoints progress to StateStore (.skill_state/)
-                                       └─ returns a result / follow-up question
-```
+   └── /agent or /computer ──► SkillRouterAgent
+                                  │
+                                  ├── matches the request against the skill index
+                                  │
+                                  └── SkillExecutionLoop
+                                         ├── loads SKILL.md
+                                         ├── calls Runner tools
+                                         ├── checkpoints state in .skill_state/
+                                         └── returns a result or follow-up question
 
-**LLM providers** (`providers/`) each implement two access paths:
-- an **API path** (`*_api.py`) using the official SDK, and
-- a **browser path** (`*_browser.py`, `*_page.py`, `*_parser.py`) that drives the provider's web UI with Playwright when no API key is available.
 
-## Project Structure
+### Main components
 
-```
-Memo/
-├── main.py                  # entry point
-├── core/                    # provider abstraction, command parsing, config, context
-├── agents/                  # SkillRouterAgent, execution loop, state store, prompts
-├── tools/                   # read / write / exec / screenshot tool implementations
-├── runner/                  # thin wrapper the execution loop calls into
-├── providers/               # gemini / chatgpt / ollama (API + browser variants)
-├── browser/                 # Playwright browser session manager
-├── skills/                  # SKILL.md-based skill library (see below)
-├── ui/                      # PySide6 desktop app (Qt Designer .ui files + widgets)
-├── memory/                  # saved conversation entities (conversations.json)
-└── mcp-configs/             # MCP server configuration
-```
+- core/ — provider abstraction, configuration, command parsing, and context handling.
+- agents/ — routing, skill execution, state persistence, and prompts.
+- tools/ — local read, write, exec, and screenshot implementations.
+- runner/ — execution wrapper used by the skill loop.
+- providers/ — Gemini, ChatGPT, and Ollama API/browser integrations.
+- browser/ — Playwright browser-session management.
+- skills/ — the SKILL.md-based skill library.
+- ui/ — the PySide6 desktop application and Qt Designer layouts.
+- memory/ — persisted conversation data.
+- mcp-configs/ — MCP server configuration.
 
 ## Available Skills
 
 | Skill | Purpose |
 |---|---|
-| `computer_skill` | Operate the local machine via `read` / `write` / `exec` / `screenshot` |
-| `docx`, `pptx`, `xlsx`, `pdf` | Generate and edit Office/PDF documents |
-| `canvas-design`, `theme-factory`, `frontend-design`, `algorithmic-art` | Visual/UI design generation |
-| `web-artifacts-builder`, `webapp-testing` | Build and test small web apps |
-| `mcp-builder` | Scaffold new MCP servers |
-| `skill-creator` | Create and edit new skills |
-| `slack-gif-creator`, `internal-comms`, `brand-guidelines`, `doc-coauthoring`, `claude-api` | Assorted content/communication helpers |
+| computer_skill | Operate the local machine through read, write, exec, and screenshot |
+| docx, pptx, xlsx, pdf | Generate and edit Office/PDF documents |
+| canvas-design, theme-factory, frontend-design, algorithmic-art | Visual and UI design generation |
+| web-artifacts-builder, webapp-testing | Build and test small web applications |
+| mcp-builder | Scaffold MCP servers |
+| skill-creator | Create and edit skills |
+| slack-gif-creator, internal-comms, brand-guidelines, doc-coauthoring, claude-api | Communication, content, and integration helpers |
 
-Each skill lives in `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`) that the router indexes to decide when to trigger it.
+Each skill lives in skills/<name>/SKILL.md. YAML frontmatter provides the skill's name and description, which the router uses when deciding whether to load it.
 
 ## Installation
 
-```bash
+bash
 git clone <your-repo-url>
 cd Memo
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\\Scripts\\activate
 pip install -r requirements.txt
-playwright install                # needed for the browser-automation provider fallback
-npm install                       # needed for pptxgenjs-based document generation
-```
+playwright install                # required for browser-automation provider paths
+npm install                       # required by pptxgenjs-based document generation
+
 
 ## Configuration
 
-Provider credentials are expected as environment variables (see `core/.env`, which is gitignored) rather than committed to source. Before running:
+Provider credentials should be supplied through environment variables or the gitignored core/.env file rather than committed to source.
 
-1. Copy `core/.env.example` → `core/.env` (create this file if it doesn't exist) and fill in whichever provider keys you plan to use (Gemini, OpenAI).
-2. Review `core/config.py` for local behavior flags (`USE_WEB_SCRAPING`, timeouts, the Ollama model tag). **Do not commit real secrets here** — see [Known Issues](#known-issues--security).
+1. Copy core/.env.example to core/.env if the example exists.
+2. Add only the provider credentials you intend to use, such as Gemini or OpenAI credentials.
+3. Review core/config.py for local behavior flags, timeouts, and the configured Ollama model.
+4. Never commit real credentials or other secrets.
+
+See Known Issues & Security before running the project with sensitive data.
 
 ## Usage
 
 ### Desktop app
 
-```bash
+bash
 python -m ui.main
 # or
 ./run_memo.sh
-```
+
 
 ### Terminal
 
-```bash
+bash
 python main.py
-```
 
-Available commands from either interface:
+
+### Commands
 
 | Command | Effect |
 |---|---|
-| `<message>` | Normal chat turn, answered by the current LLM provider |
-| `/agent <prompt>` | Route the request through the skill router |
-| `/computer <prompt>` | Force-route to the `computer_skill` for local system tasks |
-| `/swap <chatgpt\|gemini\|ollama>` | Switch the active LLM provider |
-| `/save [path]` | Save the current conversation to `memory/conversations.json` (or a custom path) |
+| <message> | Normal chat turn using the active LLM provider |
+| /agent <prompt> | Route a request through the skill router |
+| /computer <prompt> | Force-route a request to computer_skill |
+| /swap <chatgpt\|gemini\|ollama> | Switch the active LLM provider |
+| /save [path] | Save the current conversation to the default or specified path |
+
+## Skill Execution and Computer Access
+
+When a request is routed to a skill, Memo loads that skill's instructions and executes its workflow step by step. Skills can use the Runner to perform operations on the local machine.
+
+The computer skill follows an inspect → modify → verify workflow where practical. It is designed to preserve existing user data, use the least powerful operation necessary, and report execution failures rather than assuming an operation succeeded.
+
+The execution state can be checkpointed so an interrupted skill can resume instead of restarting from the beginning.
 
 ## Known Issues & Security
 
-This project isn't ready for production or public deployment as-is. Before pushing to GitHub or using it beyond local experimentation:
+Memo is not currently intended for production or untrusted public deployment. Important issues in the current snapshot include:
 
-- **Hardcoded credential:** `core/config.py` currently contains a plaintext `SUDO_PASSWORD`. Remove it and load secrets from `core/.env` / environment variables instead — `git log` history will still retain it even if you delete it later, so consider this credential burned and rotate it.
-- **`exec` tool is broad:** the `exec` tool runs arbitrary shell commands with only a substring check against the literal word `"suuudo"` (not `sudo`) as a guard, and the protected-path check in `tools.py` doesn't cover command execution at all — only `read`/`write` paths. Treat any skill or prompt that can reach this tool as having full shell access.
-- **`node_modules/` appears to be tracked** — add it to `.gitignore` and run `git rm -r --cached node_modules` before your first push.
-- **Stray artifacts:** a `$HOME/Desktop` directory and `__pycache__/`, `output/`, and `.skill_state/` session files are present in this snapshot — worth cleaning up or gitignoring before publishing.
-- **`memory/conversations.json`** may contain real conversation history; gitignore it unless you intend to publish transcripts.
-- Several modules (`main2()` debug entry point, placeholder `"xd"` signal payloads, an unused `interface.py` alongside `interface_new.py`) look like in-progress scaffolding rather than finished code paths.
+- Plaintext credential risk: core/config.py contains a plaintext SUDO_PASSWORD. Remove hardcoded credentials and use environment-based secret management. If this credential has ever been committed to Git history, treat it as exposed and rotate it rather than merely deleting the current copy.
+- Broad exec capability: the exec tool can execute shell commands. Filesystem path protection for read/write does not by itself make shell execution safe. Any skill or prompt that can reach exec should be treated as having potentially broad local-system access.
+- Repository hygiene: node_modules/, __pycache__/, output/, .skill_state/, and other generated artifacts should not be committed unless there is a deliberate reason to track them.
+- Conversation privacy: memory/conversations.json can contain conversation history. Keep it out of version control unless those transcripts are intentionally being published.
+- In-progress scaffolding: parts of the codebase, including alternate interface/debug paths and placeholder values, remain experimental and may need consolidation before a production release.
+
+Before publishing the repository, review the full Git history for secrets, rotate any exposed credentials, and verify that generated or private data is excluded by .gitignore.
 
 ## Roadmap
 
-- [ ] Wire the UI's `MockAssistant` up to the real `Assistant` class
-- [ ] Replace the plaintext credential with proper secrets management
-- [ ] Tighten the `exec` tool's safety checks
-- [ ] Consolidate `core/interface.py` and `core/interface_new.py`
+- [ ] Connect the UI's MockAssistant to the real Assistant implementation.
+- [ ] Replace plaintext credentials with proper secrets management.
+- [ ] Tighten and test exec safety controls.
+- [ ] Consolidate core/interface.py and core/interface_new.py.
+- [ ] Expand automated tests around routing, skill execution, checkpoint recovery, and tool permissions.
+- [ ] Improve repository hygiene and default .gitignore coverage.
+
+## Contributing
+
+Memo is an experimental project. When contributing, keep changes narrowly scoped, avoid committing secrets or generated state, and add verification for changes that affect skill routing, tool execution, persistence, or security boundaries.
 
 ## License
 
-This project is licensed under the MIT License — you're free to use, copy, modify, merge, publish, and distribute this code (including for commercial purposes), provided the original copyright notice and this permission notice are included in all copies or substantial portions of the software. The software is provided "as is," without warranty of any kind, and the authors are not liable for any claim, damages, or other liability arising from its use.
+This project is licensed under the MIT License. You may use, copy, modify, publish, and distribute the software, including for commercial purposes, provided the original copyright notice and license are included in copies or substantial portions of the software.
+
+The software is provided as is, without warranty of any kind. See the MIT License text distributed with the project for the complete terms.
