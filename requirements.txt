@@ -1,4 +1,4 @@
-anthropic==1.8.0
+ anthropic==1.8.0
 beautifulsoup4==4.15.0
 defusedxml==0.7.1
 imageio==2.37.4
@@ -16,7 +16,6 @@ protobuf==7.36.2
 pynput==1.6.8
 pypdf==6.19.0
 pyside6==6.11.1
-PySide6==6.11.2
 pyside6_addons==6.11.1
 pyside6_essentials==6.11.1
 PyYAML==6.0.3
