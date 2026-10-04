@@ -3,7 +3,7 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright, BrowserContext, Page
 from core.exceptions import AppException, LLMException, LLMConfigurationError, LLMAuthenticationError, LLMRequestError, LLMResponseError, APIKeyMissingError,ConnectionError
-
+from core.config import PREF_BROWSER
 class Browser:
     _instance = None
     def __new__(cls):
@@ -36,25 +36,10 @@ class Browser:
         self._playwright = sync_playwright().start()
 
         # Try Chromium first
-        try:
-            print("Starting Chromium...")
-
-            self.context = self._playwright.chromium.launch_persistent_context(
-                user_data_dir=str(self.user_data_dir),
-                headless=headless,
-            )
-
-            self.browser_name = "chromium"
-            print("Chromium started.")
-
-        except Exception as chromium_error:
-            print(f"Chromium failed: {chromium_error}")
-            print("Trying Firefox...")
-
-            # Clean up failed Chromium attempt
-            self.context = None
-
+        if pref_browser := PREF_BROWSER.lower() == "firefox":
             try:
+                print("Starting Firefox...")
+
                 self.context = self._playwright.firefox.launch_persistent_context(
                     user_data_dir=str(self.user_data_dir),
                     headless=headless,
@@ -62,11 +47,58 @@ class Browser:
 
                 self.browser_name = "firefox"
                 print("Firefox started.")
+            except Exception as firefox_error:
+                print(f"Firefox failed: {firefox_error}")
+                print("Trying Chromium  ...")
 
-            except Exception:
-                self._playwright.stop()
-                self._playwright = None
-                raise
+                # Clean up failed Chromium attempt
+                self.context = None
+
+                try:
+                    self.context = self._playwright.chromium.launch_persistent_context(
+                        user_data_dir=str(self.user_data_dir),
+                        headless=headless,
+                    )
+
+                    self.browser_name = "chromium"
+                    print("Chromium     started.")
+
+                except Exception:
+                    self._playwright.stop()
+                    self._playwright = None
+                    raise
+        else:
+            try:
+                print("Starting Chromium...")
+
+                self.context = self._playwright.chromium.launch_persistent_context(
+                    user_data_dir=str(self.user_data_dir),
+                    headless=headless,
+                )
+
+                self.browser_name = "chromium"
+                print("Chromium started.")
+
+            except Exception as chromium_error:
+                print(f"Chromium failed: {chromium_error}")
+                print("Trying Firefox...")
+
+                # Clean up failed Chromium attempt
+                self.context = None
+
+                try:
+                    self.context = self._playwright.firefox.launch_persistent_context(
+                        user_data_dir=str(self.user_data_dir),
+                        headless=headless,
+                    )
+
+                    self.browser_name = "firefox"
+                    print("Firefox started.")
+
+                except Exception:
+                    self._playwright.stop()
+                    self._playwright = None
+                    raise
 
         # Reuse an existing page if one exists
         if self.context.pages:
