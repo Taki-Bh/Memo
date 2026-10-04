@@ -7,7 +7,7 @@ Memo is a desktop AI assistant that routes requests to skills — self-contained
 ## Features
 
 - Skill-based agent routing — a lightweight router matches requests against the SKILL.md skill index and can answer directly, load a skill, or continue an existing skill execution.
-- Multi-provider LLM support — switch between Gemini, ChatGPT, and local Ollama models at runtime with /swap <provider>. Providers can use official APIs or browser automation through Playwright when configured for that path.
+- Multi-provider LLM support — switch between Gemini, ChatGPT, and local Ollama models at runtime. Providers can use official APIs or browser automation through Playwright when configured for that path.
 - Computer-use tool loop — the computer skill can inspect and operate on the local filesystem through read, write, exec, and screenshot.
 - Checkpointed skill execution — long-running skill tasks can persist execution state in .skill_state/ and resume from a previous checkpoint.
 - Conversation persistence — conversations can be saved to memory/conversations.json or another path.
@@ -33,5 +33,4 @@ Assistant.send() ──► CommandParser
                                          ├── calls Runner tools
                                          ├── checkpoints state in .skill_state/
                                          └── returns a result or follow-up question
-
-You stopped this response
+```
