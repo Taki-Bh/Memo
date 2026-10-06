@@ -167,7 +167,8 @@ always be present.
 {
   "call": {
     "op_name": "read|write|exec|screenshot",
-    "args": "arguments of read/write in succession separated by space(respetively '||' for write)",
+    "path": "path/to/file",
+    "content": "file content",
     "cmd": "complete bash command"
   },
   "task_state": {
@@ -221,7 +222,7 @@ Read, task still in progress:
 Write, task still in progress:
 ```json
 {
-  "call": {"op_name": "write", "args": "path/to/file || content"},
+  "call": {"op_name": "write", "path": "path/to/file", "content": "content"},
   "task_state": {
     "last_checkpoint": "Writing Output File",
     "status": "in_progress",

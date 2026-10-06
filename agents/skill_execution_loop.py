@@ -632,27 +632,29 @@ class SkillExecutionLoop(QObject):
         # ======================================================
 
         if name == "write":
+            content = call.get("content") or None
+            path=call.get("path") 
+            if not path or content:
+                separator = "||"
 
-            separator = "||"
-
-            sep_index = args.find(
-                separator
-            )
-
-            if sep_index == -1:
-
-                return (
-                    "Invalid write arguments. "
-                    "Expected: path||content"
+                sep_index = args.find(
+                    separator
                 )
 
-            path = args[
-                :sep_index
-            ].strip()
+                if sep_index == -1:
 
-            content = args[
-                sep_index + len(separator):
-            ]
+                    return (
+                        "Invalid write arguments. "
+                        "Expected: path||content"
+                    )
+
+                path = args[
+                    :sep_index
+                ].strip()
+
+                content = args[
+                    sep_index + len(separator):
+                ]
 
             if not path:
 
