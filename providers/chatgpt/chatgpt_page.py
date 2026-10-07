@@ -29,6 +29,7 @@ class ChatGPTPage(LLMPage):
                 msg=""
                 idle_counter=0
                 t=0
+                a=""
                 while True:
                      
                     
@@ -39,7 +40,7 @@ class ChatGPTPage(LLMPage):
                     if assistant_msgs.count():
                         msg=assistant_msgs.last.text_content()
                     if msg.find(':'):
-                        msg=msg[msg.find(':')+1:]
+                        msg=msg[msg.find(':')+1:].strip()
                         if msg.lower().find("searching the web")!=-1:
                              time.sleep(1)
                              continue
@@ -48,15 +49,17 @@ class ChatGPTPage(LLMPage):
                         else:
                             old_msg=msg
                             idle_counter=0
-                        if t>MSG_TIMEOUT*60 and msg.strip()=="" :
+                        if t>MSG_TIMEOUT and msg.strip()=="" :
                             return None
-                        if msg !="" and idle_counter>MSG_CHECK_DUR*60:
+                        
+                        a=msg[len(msg)-1] if msg!="" else ""
+                        if msg !="" and msg[len(msg)-1]=="}" and idle_counter>MSG_CHECK_DUR*60:
                             #print(f"Assistant said: {msg}")
                             #input()
                             return msg
                     time.sleep(0.016)
-                    t+=0.016
-                    print(f"elapsed time={t} and msg=",msg)
+                    t+=0.032
+                    print(f"elapsed time={t} and msg={msg}, and last character is ",a)
                         
                     
 
