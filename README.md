@@ -1,4 +1,4 @@
- # Memo
+# Memo
 
 Memo is a desktop AI assistant that routes requests to skills — self-contained instruction packs inspired by Claude's skill system — and can operate on your local machine through a small, sandboxed tool layer (read, write, exec, and screenshot). It supports multiple LLM backends, including Gemini, ChatGPT, and local Ollama models, and ships with a PySide6 desktop UI.
 
@@ -13,6 +13,7 @@ Memo is a desktop AI assistant that routes requests to skills — self-contained
 - Conversation persistence — conversations can be saved to memory/conversations.json or another path.
 - Desktop UI — a PySide6 application provides a dark glass/neumorphic interface with a sidebar, chat view, and auto-resizing composer. Qt Designer .ui layouts are supported.
 - Bundled skill library — includes document generation, design, development, communication, and tooling skills.
+- Workspace integration — designed as an interactive workspace assistant that manages files, runs commands, and provides robust local automation capabilities.
 
 ## Architecture
 
