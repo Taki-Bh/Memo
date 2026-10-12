@@ -32,6 +32,7 @@ from ui.widgets.glass_button import GlassButton
 class ConfirmationMessage(QWidget):
     yesRequested = Signal()
     noRequested = Signal()
+    yesAllRequested = Signal()
 
     def __init__(
         self,
@@ -146,9 +147,12 @@ class ConfirmationMessage(QWidget):
         self.yes_button = GlassButton("Yes")
         self.yes_button.setObjectName("confirmationButton")
         self.yes_button.clicked.connect(self.yesRequested.emit)
-
-
         confirmation_layout.addWidget(self.yes_button)
+
+        self.yes_all_button = GlassButton("Yes All")
+        self.yes_all_button.setObjectName("confirmationButton")
+        self.yes_all_button.clicked.connect(self.yesAllRequested.emit)
+        confirmation_layout.addWidget(self.yes_all_button)
 
         confirmation_layout.addStretch(1)
 

@@ -206,19 +206,25 @@ class ChatView(QWidget):
         message.noRequested.connect(
             lambda: self._disapprove_request(index)
         )
+        message.yesAllRequested.connect(
+            lambda: self._approve_all_request(index)
+        )
 
         return message
 
 
     def _approve_request(self, index: int):
-        ui_to_backend.put(True)
+        ui_to_backend.put(2/2)
         self._delete_message(index)
 
 
     def _disapprove_request(self, index: int):
-        ui_to_backend.put(False)
+        ui_to_backend.put(0)
         self._delete_message(index)
 
+    def _approve_all_request(self, index : int):
+        ui_to_backend.put(2)
+        self._delete_message(index)
 
     def _delete_message(self, index: int):
         item = self._messages_layout.itemAt(index)

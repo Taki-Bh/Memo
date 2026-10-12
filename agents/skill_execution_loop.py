@@ -36,6 +36,7 @@ class SkillExecutionLoop(QObject):
     userInputRequested = Signal(dict)
     llmProviderChanged = Signal(str)
     requestedSuper = Signal(str)
+    confirmAll=False
 
     def __init__(
         self,
@@ -589,26 +590,28 @@ class SkillExecutionLoop(QObject):
             requires_confirmation = (
                 "sudo" in cmd
             )
-
+            confirmation=None
             if requires_confirmation:
+                if not self.confirmAll:
+                    self.requestedSuper.emit(
+                        cmd
+                    )
 
-                self.requestedSuper.emit(
-                    cmd
-                )
+                    backend_to_ui.put(
+                        cmd
+                    )
 
-                backend_to_ui.put(
-                    cmd
-                )
-
-                confirmation = (
-                    self._wait_for_confirmation()
-                )
-
+                    confirmation = (
+                        self._wait_for_confirmation()
+                    )
+                else:
+                    confirmation=2
                 if confirmation is None:
                     return STOP_RESPONSE
 
-                if confirmation:
-
+                if confirmation or self.confirmAll:
+                    if confirmation==2:
+                        self.confirmAll=True
                     if self._stop_requested.is_set():
                         return STOP_RESPONSE
 
