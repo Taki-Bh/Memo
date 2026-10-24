@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import json
 
+
 def get_sync_llm_msg(el):
     print("Waiting for LLM response to finish...")
     print(el.count())
@@ -28,6 +29,69 @@ else:
     PROJECT_ROOT = ROOT_DIR
 
 MEMORY_DIR = PROJECT_ROOT / "memory"
+
+
+def get_top_relevant_conversations(query, top_k=3):
+    """Return up to top_k unique conversations ranked by semantic relevance.
+
+    The conversation RAG index must already exist in RAG/qdrant_data.
+    Each result contains id, title, date, score, and relevant_messages.
+    """
+    if not isinstance(query, str) or not query.strip():
+        return []
+    if not isinstance(top_k, int) or isinstance(top_k, bool) or top_k <= 0:
+        return []
+
+    import sys
+
+    rag_dir = PROJECT_ROOT / "RAG"
+    db_path = rag_dir / "qdrant_data"
+    if not db_path.exists():
+        return []
+
+    if str(rag_dir) not in sys.path:
+        sys.path.insert(0, str(rag_dir))
+
+    try:
+        from conversation_rag import ConversationRAG
+    except ImportError:
+        return []
+
+    rag = ConversationRAG(path=str(db_path))
+    try:
+        hits = rag.search(query.strip(), top_k=max(top_k * 3, top_k))
+        results = []
+        by_id = {}
+        for hit in hits:
+            result = by_id.get(hit.conversation_id)
+            if result is None:
+                if len(results) >= top_k:
+                    continue
+                result = {
+                    "id": hit.conversation_id,
+                    "title": hit.conversation_name,
+                    "date": hit.date,
+                    "score": hit.score,
+                    "relevant_messages": [],
+                }
+                by_id[hit.conversation_id] = result
+                results.append(result)
+            result["score"] = max(result["score"], hit.score)
+            if not any(
+                message["message_index"] == hit.message_index
+                and message["text"] == hit.text
+                for message in result["relevant_messages"]
+            ):
+                result["relevant_messages"].append({
+                    "role": hit.role,
+                    "text": hit.text,
+                    "score": hit.score,
+                    "message_index": hit.message_index,
+                })
+        return results
+    finally:
+        rag.client.close()
+
 
 def get_conversations():
     conversations_list = []
@@ -64,6 +128,7 @@ def get_conversations():
     except Exception as e:
         print(f"Error loading conversation file: {e}")
 
+
 def update_conversation_name(conv_id, new_name):
     conversations_file = MEMORY_DIR / "conversations.json"
     try:
@@ -84,6 +149,7 @@ def update_conversation_name(conv_id, new_name):
         print(f"Error updating conversation name: {e}")
         return False
 
+
 def delete_conversation(conv_id):
     conversations_file = MEMORY_DIR / "conversations.json"
     try:
@@ -103,6 +169,7 @@ def delete_conversation(conv_id):
     except Exception as e:
         print(f"Error deleting conversation: {e}")
         return False
+
 
 def archive_conversation(conv_id):
     conversations_file = MEMORY_DIR / "conversations.json"
