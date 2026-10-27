@@ -53,7 +53,7 @@ def get_top_relevant_conversations(query, top_k=3):
         sys.path.insert(0, str(rag_dir))
 
     try:
-        from conversation_rag import ConversationRAG
+        from RAG.conversation_rag import ConversationRAG
     except ImportError:
         return []
 
