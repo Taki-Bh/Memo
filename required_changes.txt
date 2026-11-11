@@ -1,0 +1,130 @@
+MEMO - REQUIRED CHANGES BEFORE PUBLISHING / WIDER USE
+=====================================================
+
+Priorities: [MUST] = fix before pushing anything
+            [SHOULD] = fix soon
+            [POLISH] = cleanup
+
+
+-----------------------------------------------------
+1. [MUST] Remove plaintext SUDO_PASSWORD (core/config.py)
+-----------------------------------------------------
+- Delete the SUDO_PASSWORD line from core/config.py.
+- Treat the password as compromised and change it now.
+- Deleting the line is not enough: it remains in git history.
+  Either rewrite history (git filter-repo or BFG Repo-Cleaner)
+  or start a fresh repo from a clean snapshot.
+- Load all secrets from core/.env / environment variables.
+- Preferably drop sudo support from the agent entirely.
+
+
+-----------------------------------------------------
+2. [MUST] Fix the exec tool guard
+-----------------------------------------------------
+- The current check looks for the misspelled string "suuudo",
+  so it blocks nothing (including real "sudo").
+- The protected-path check in tools.py covers only read/write,
+  not shell command execution.
+- Substring blacklists are easy to bypass. Replace with:
+    * a command allowlist, and/or
+    * user confirmation before every command
+    * a fixed working directory
+    * execution timeouts
+    * ideally a container or VM sandbox
+- Treat any skill or prompt that can reach exec as having
+  full shell access until this is fixed.
+
+
+-----------------------------------------------------
+3. [MUST] Harden path checks
+-----------------------------------------------------
+- Resolve paths with os.path.realpath() before comparing them
+  against the protected list (/etc, /boot, /usr, ~/.ssh, etc.)
+  so "../" and symlinks cannot bypass it.
+- Consider an allowlist of writable directories instead of a
+  blocklist of protected ones.
+
+
+-----------------------------------------------------
+4. [MUST] Fix .gitignore and untrack files
+-----------------------------------------------------
+Add to .gitignore and remove from the index
+(git rm -r --cached <path>):
+    node_modules/
+    __pycache__/
+    output/
+    .skill_state/
+    memory/conversations.json
+    core/.env
+    .venv/
+    $HOME/Desktop   (stray directory; delete it)
+
+
+-----------------------------------------------------
+5. [SHOULD] Config and secrets setup
+-----------------------------------------------------
+- Create core/.env.example (README tells users to copy it,
+  but it may not exist).
+- Review core/config.py flags (USE_WEB_SCRAPING, timeouts,
+  Ollama model tag) for anything that should not be committed.
+
+
+-----------------------------------------------------
+6. [SHOULD] License
+-----------------------------------------------------
+- Add a real LICENSE file (MIT text with your name and year).
+  The README only describes the license.
+- Check licenses of bundled skills. If docx, pptx, xlsx, pdf
+  and others came from Anthropic's skills repo, some are
+  source-available rather than open source and may not be
+  relicensable under MIT.
+- Keep their original license files, or do not bundle them.
+
+
+-----------------------------------------------------
+7. [SHOULD] Prompt-injection protection
+-----------------------------------------------------
+- Text inside files or screenshots the model reads can steer it
+  into calling exec/write.
+- Require user confirmation for writes and commands.
+- Treat file contents as untrusted data.
+
+
+-----------------------------------------------------
+8. [SHOULD] Browser-automation fallback risk
+-----------------------------------------------------
+- Driving the ChatGPT / Gemini web UIs with Playwright may
+  violate their terms of service and breaks when the UI changes.
+- Document this risk in the README, or make the fallback
+  opt-in.
+
+
+-----------------------------------------------------
+9. [POLISH] Code cleanup
+-----------------------------------------------------
+- Wire the UI's MockAssistant to the real Assistant class.
+- Merge core/interface.py and core/interface_new.py.
+- Remove the main2() debug entry point.
+- Replace placeholder "xd" signal payloads.
+
+
+-----------------------------------------------------
+10. [POLISH] README updates
+-----------------------------------------------------
+- Replace the <your-repo-url> placeholder.
+- Update Roadmap and Known Issues as items are fixed.
+
+
+-----------------------------------------------------
+CHECKLIST
+-----------------------------------------------------
+[ ] Password rotated and removed from config.py and git history
+[ ] exec tool guarded (allowlist/confirmation/sandbox/timeout)
+[ ] Paths resolved with realpath before checks
+[ ] .gitignore updated, tracked junk removed from index
+[ ] core/.env.example created
+[ ] LICENSE added, bundled skill licenses verified
+[ ] Confirmation required for writes and commands
+[ ] Browser fallback risk documented
+[ ] MockAssistant replaced, duplicate interface merged
+[ ] README placeholders and status sections updated

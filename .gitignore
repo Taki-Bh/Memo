@@ -1,0 +1,13 @@
+./core/.env
+user_data/
+hadoop-3.4.1.tar.gz
+state_log.net
+memory/
+# Generated Python/runtime files
+__pycache__/
+*.py[cod]
+.skill_state/
+ 
+# Installed Node.js dependencies
+node_modules/
+Programs/

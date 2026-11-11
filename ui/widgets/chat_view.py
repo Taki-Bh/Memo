@@ -1,0 +1,297 @@
+from datetime import datetime
+from pathlib import Path
+from core.communication import backend_to_ui,ui_to_backend
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import (
+    Qt,
+    QTimer,
+    Signal,
+    QPoint,
+    QPropertyAnimation,
+    QParallelAnimationGroup,
+    QEasingCurve,
+)
+
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+    QGraphicsOpacityEffect,
+)
+from ui.widgets.chat_message import ChatMessage
+from ui.widgets.composer import Composer
+from ui.widgets.glass_button import GlassButton
+from ui.widgets.typing_indicator import TypingIndicator
+from ui.widgets.ui_loader import CustomUiLoader
+from ui.widgets.confirmation_message import ConfirmationMessage
+
+UI_DIR = Path(__file__).resolve().parent.parent / "ui"
+
+SUGGESTIONS = [
+    ("💡", "Explain a concept"),
+    ("✍️", "Write something"),
+    ("📄", "Analyze a file"),
+    ("🧠", "Help me brainstorm"),
+]
+
+def animate_in(widget: QWidget, target_pos: QPoint):
+    # Starting position: shifted down/right by the widget's size
+    start_pos = target_pos + QPoint(
+        0,
+        widget.height()
+    )
+
+    # Opacity effect
+    opacity_effect = QGraphicsOpacityEffect(widget)
+    widget.setGraphicsEffect(opacity_effect)
+
+    # Position animation
+    pos_anim = QPropertyAnimation(widget, b"pos")
+    pos_anim.setDuration(500)
+    pos_anim.setStartValue(start_pos)
+    pos_anim.setEndValue(target_pos)
+    pos_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+    # Opacity animation
+    opacity_anim = QPropertyAnimation(opacity_effect, b"opacity")
+    opacity_anim.setDuration(500)
+    opacity_anim.setStartValue(0.0)
+    opacity_anim.setEndValue(1.0)
+    opacity_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+    # Run both simultaneously
+    group = QParallelAnimationGroup(widget)
+    group.addAnimation(pos_anim)
+    group.addAnimation(opacity_anim)
+
+    # Keep reference alive
+    widget._animation = group
+
+    group.start()
+class ChatView(QWidget):
+    messageSent = Signal(str)
+    suggestionActivated = Signal(str)
+    stopRequested = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        loader = CustomUiLoader({"GlassButton": GlassButton})
+        self.ui = loader.load_ui(UI_DIR / "chat_view.ui")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui)
+
+        self.ui.modelSelectorCombo.addItems(["Gemini", "ChatGPT"])
+        self.ui.modelSelectorCombo.currentTextChanged.connect(self._on_model_changed)
+
+        # Embed the composer into its placeholder container.
+        composer_layout = QVBoxLayout(self.ui.composerContainer)
+        composer_layout.setContentsMargins(0, 0, 0, 0)
+        self.composer = Composer(self.ui.composerContainer)
+        composer_layout.addWidget(self.composer)
+        self.composer.messageSent.connect(self._on_message_sent)
+        self.composer.stopRequested.connect(self._on_stop_requested)
+
+        self._messages_layout: QVBoxLayout = self.ui.messagesLayout
+        self._tail_spacer = self._messages_layout.takeAt(self._messages_layout.count() - 1)
+
+        self.typing_indicator = TypingIndicator()
+        self.typing_indicator.hide()
+
+        self.empty_state = self._build_empty_state()
+        self._messages_layout.addWidget(self.empty_state)
+        self._messages_layout.addWidget(self.typing_indicator)
+        self._messages_layout.addItem(self._tail_spacer)
+
+        self._has_messages = False
+        self._internal_change = False
+
+        # Auto-scroll: any time the scroll range changes (a message is added,
+        # the typing indicator appears, content is cleared, etc.) snap to the
+        # bottom. This covers every content-changing path automatically,
+        # instead of relying on each method to remember to call
+        # _scroll_to_bottom itself.
+        self._autoscroll = True
+        scroll_bar = self.ui.messageScrollArea.verticalScrollBar()
+        scroll_bar.rangeChanged.connect(self._on_scroll_range_changed)
+        scroll_bar.valueChanged.connect(self._on_scroll_value_changed)
+
+    def _on_model_changed(self, text: str):
+        if self._internal_change:
+            return
+        provider = text.lower()
+        if "chatgpt" in provider:
+            self.messageSent.emit("/swap chatgpt")
+        elif "gemini" in provider:
+            self.messageSent.emit("/swap gemini")
+
+    def set_current_provider(self, provider_name: str):
+        self._internal_change = True
+        for i in range(self.ui.modelSelectorCombo.count()):
+            if provider_name.lower() in self.ui.modelSelectorCombo.itemText(i).lower():
+                self.ui.modelSelectorCombo.setCurrentIndex(i)
+                break
+        self._internal_change = False
+
+    # ------------------------------------------------------------------
+    # Empty state
+    # ------------------------------------------------------------------
+    def _build_empty_state(self):
+        container = QWidget()
+        container.setObjectName("emptyState")
+        outer = QVBoxLayout(container)
+        outer.addStretch(1)
+
+        orb = QLabel("✦")
+        orb.setObjectName("emptyStateOrb")
+        orb.setAlignment(Qt.AlignCenter)
+        outer.addWidget(orb)
+
+        heading = QLabel("How can I help?")
+        heading.setObjectName("emptyStateHeading")
+        heading.setAlignment(Qt.AlignCenter)
+        outer.addWidget(heading)
+
+        cards_row = QHBoxLayout()
+        cards_row.setSpacing(10)
+        cards_row.addStretch(1)
+        for icon, label in SUGGESTIONS:
+            card = GlassButton(f"{icon}  {label}")
+            card.setObjectName("suggestionCard")
+            card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+            card.setMinimumHeight(46)
+            card.clicked.connect(lambda _, t=label: self.suggestionActivated.emit(t))
+            cards_row.addWidget(card)
+        cards_row.addStretch(1)
+        outer.addLayout(cards_row)
+
+        outer.addStretch(2)
+        return container
+
+    # ------------------------------------------------------------------
+    # Message handling
+    # ------------------------------------------------------------------
+    def _on_stop_requested(self):
+        self.stopRequested.emit() if hasattr(self, "stopRequested") else None
+
+    def _on_message_sent(self, text: str):
+        self.messageSent.emit(text)
+
+    def add_user_message(self, text: str,animate = True):
+        self._ensure_conversation_started()
+        message = ChatMessage("user", text, timestamp=_now())
+        self._insert_message(message)
+        if animate:
+            QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
+        
+
+    def add_ai_message(self, text: str,animate = True) -> ChatMessage:
+        self._ensure_conversation_started()
+        message = ChatMessage("ai", text, timestamp=_now())
+        self._insert_message(message)
+        if animate:
+            QTimer.singleShot(0, lambda: animate_in(message, message.pos()))
+        return message
+    def add_confirmation_message(self, text: str):
+        message = ConfirmationMessage("ai", text, timestamp=_now())
+        index = self._insert_message(message)
+
+        message.yesRequested.connect(
+            lambda: self._approve_request(index)
+        )
+        message.noRequested.connect(
+            lambda: self._disapprove_request(index)
+        )
+        message.yesAllRequested.connect(
+            lambda: self._approve_all_request(index)
+        )
+
+        return message
+
+
+    def _approve_request(self, index: int):
+        ui_to_backend.put(2/2)
+        self._delete_message(index)
+
+
+    def _disapprove_request(self, index: int):
+        ui_to_backend.put(0)
+        self._delete_message(index)
+
+    def _approve_all_request(self, index : int):
+        ui_to_backend.put(2)
+        self._delete_message(index)
+
+    def _delete_message(self, index: int):
+        item = self._messages_layout.itemAt(index)
+
+        if item is not None:
+            widget = item.widget()
+            if widget is not None:
+                self._messages_layout.removeWidget(widget)
+                widget.deleteLater()
+
+
+    def _insert_message(self, message: ChatMessage):
+        index = self._messages_layout.indexOf(self.typing_indicator)
+
+        self._messages_layout.insertWidget(index, message)
+
+        self._autoscroll = True
+        QTimer.singleShot(0, self._scroll_to_bottom)
+
+        return index
+
+    def _ensure_conversation_started(self):
+        if not self._has_messages:
+            self._has_messages = True
+            self.empty_state.hide()
+    def _show_typing(self,show:bool):
+            self.composer.set_enabled_state(not show)
+            if show:
+                self.typing_indicator.start()
+            else:
+                self.typing_indicator.stop()
+            self._autoscroll = True
+            QTimer.singleShot(0, self._scroll_to_bottom)    
+    def show_typing(self, show: bool):
+
+        QTimer.singleShot(500,lambda : self._show_typing(show))
+
+    def clear_conversation(self):
+        for i in reversed(range(self._messages_layout.count())):
+            item = self._messages_layout.itemAt(i)
+            widget = item.widget()
+            if widget is None or widget in (self.empty_state, self.typing_indicator):
+                continue
+            self._messages_layout.takeAt(i)
+            widget.deleteLater()
+        self._has_messages = False
+        self.empty_state.show()
+
+    # ------------------------------------------------------------------
+    # Scrolling
+    # ------------------------------------------------------------------
+    def _on_scroll_range_changed(self, _min: int, _max: int):
+        # Fires whenever the content height changes (new message, typing
+        # indicator toggled, etc.). Snap to the bottom automatically.
+        if self._autoscroll:
+            QTimer.singleShot(0, self._scroll_to_bottom)
+
+    def _on_scroll_value_changed(self, value: int):
+        # If the user manually scrolls up to read history, stop
+        # auto-scrolling until they're back at (or near) the bottom.
+        bar = self.ui.messageScrollArea.verticalScrollBar()
+        self._autoscroll = value >= bar.maximum() - 4
+
+    def _scroll_to_bottom(self):
+        bar = self.ui.messageScrollArea.verticalScrollBar()
+        bar.setValue(bar.maximum())
+
+
+def _now() -> str:
+    return datetime.now().strftime("%H:%M")
