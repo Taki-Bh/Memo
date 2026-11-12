@@ -53,7 +53,8 @@ class ChatGPTPage(LLMPage):
                             idle_counter=0
                     if t>MSG_TIMEOUT and msg.strip()=="" :
                             return None
-                        
+                    if t> MSG_TIMEOUT:
+                          return msg
                     a=msg[len(msg)-1] if msg!="" else ""
                     if msg !="" and msg[len(msg)-1]=="}" and idle_counter>MSG_CHECK_DUR*60:
                             #print(f"Assistant said: {msg}")
