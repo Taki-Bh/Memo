@@ -1,1 +1,0 @@
-import subprocess\n\ntry:\n    subprocess.run(["git", "commit", "-m", "confirmation request upon sudo"], check=True)\n    subprocess.run(["git", "push"], check=True)\n    print("SUCCESS")\nexcept Exception as e:\n    print(f"ERROR: {e}")
