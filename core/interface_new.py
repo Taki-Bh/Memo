@@ -162,7 +162,7 @@ class Assistant(QObject):
         )
 
     def _send_to_llm_for_save(self,prompt):
-        return _send_to_llm(prompt + '\n(Return your message in a JSON format of {"message": "your message here"})',)
+        return self._send_to_llm(prompt + '\n(Return your message in a JSON format of {"message": "your message here"})',)
     def _send_to_llm(
         self,
         prompt: str,
