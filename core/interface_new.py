@@ -204,13 +204,13 @@ class TerminalInterface:
     def run(self):
         print("AI Assistant")
         print(f"Provider: {self.assistant.llm.mode}")
-        print()
+        print("")
         print("Commands:")
-        print("  /agent <prompt>  → send request to agent router")
-        print("  /swap <provider> → swap provider (chatgpt/gemini)")
-        print("  /save [path]     → save conversation entity to json")
-        print("  /quit             → exit")
-        print()
+        print("     /agent <prompt>  → send request to agent router")
+        print("     /swap <provider> → swap provider (chatgpt/gemini)")
+        print("     /save [path]     → save conversation entity to json")
+        print("     /quit             → exit")
+        print("")
 
         while True:
             try:

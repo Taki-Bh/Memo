@@ -1,4 +1,4 @@
- anthropic==1.8.0
+anthropic==1.8.0
 beautifulsoup4==4.15.0
 defusedxml==0.7.1
 imageio==2.37.4
@@ -20,3 +20,11 @@ pyside6_addons==6.12.0
 pyside6_essentials==6.12.0
 PyYAML==6.0.3
 Requests==2.34.2
+pyee>=12
+qdrant-client>=1.9.0        # RAG vector store (RAG/conversation_rag.py)
+fastembed>=0.3.2            # local embeddings (BAAI/bge-small-en-v1.5)
+ollama                      # Ollama provider
+google-genai                # Gemini API provider
+json_repair                 # tolerant JSON parsing (agents/jsonparser.py)
+python-telegram-bot         # Telegram bridge (tools/telegram)
+python-dotenv               # .env loading
