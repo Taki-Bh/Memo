@@ -4,6 +4,13 @@ from PIL import ImageGrab
 from pathlib import Path 
 import subprocess
 from core.config import SUDO_PASSWORD
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SUDO_PASSWORD = os.getenv("SUDO_PASSWORD")
+
 
 HOME = Path.home().resolve()
 
