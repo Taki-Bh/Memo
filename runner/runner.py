@@ -6,7 +6,12 @@ import threading
 from typing import Any
 
 from tools.tools import read, write, screenshot
-from core.config import SUDO_PASSWORD
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SUDO_PASSWORD = os.getenv("SUDO_PASSWORD")
 
 
 class Runner:

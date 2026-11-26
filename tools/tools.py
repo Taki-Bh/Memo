@@ -3,7 +3,6 @@ import io
 from PIL import ImageGrab
 from pathlib import Path 
 import subprocess
-from core.config import SUDO_PASSWORD
 from dotenv import load_dotenv
 import os
 
